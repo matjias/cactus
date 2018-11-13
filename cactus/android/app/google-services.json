@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "1019084148013",
+    "firebase_url": "https://cactus-6f891.firebaseio.com",
+    "project_id": "cactus-6f891",
+    "storage_bucket": "cactus-6f891.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1019084148013:android:ec205cceb8916e8d",
+        "android_client_info": {
+          "package_name": "com.cactus"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1019084148013-tak92srm2k2b4jphas2rdum91p2gjbh6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.cactus",
+            "certificate_hash": "05e4be8d5a8808c50c6a7a569d044213e0d13920"
+          }
+        },
+        {
+          "client_id": "1019084148013-lucmh6hrq95fnlot2pms9734c5bj32fe.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDxjqPPDPfzKfSD4fJDwLm9R79ykWhESnM"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1019084148013-lucmh6hrq95fnlot2pms9734c5bj32fe.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
