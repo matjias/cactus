@@ -1,14 +1,150 @@
 import React, { Component } from 'react';
-import { View, Text, Button } from 'react-native';
+import { View, Text, Button,ScrollView ,Image} from 'react-native';
+import {RkCard,RkStyleSheet} from 'react-native-ui-kitten';
+import { data } from '../data/';
+import { PlanView } from '../components/planView';
+// import firebase from 'react-native-firebase';
 
 export class Feed extends Component {
+
+  static navigationOptions = {
+    title: 'Cactus',
+  };
+  constructor(props) {
+    super(props);
+    // this.state = {
+    //   name:'',
+    //   aboutMe:''
+    // };
+
+    // this.ref=firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid)
+    //retrieve profile info
+
+
+    // this.ref.get().then((doc)=>{if (doc.exists) 
+    //           {var user=doc.data()
+    //           //retrieve goals
+    //           this.state = {
+    //             name:user.name,
+    //             aboutMe:user.aboutMe}
+    //           }}).catch()
+    
+    // this.state = {
+    //     datas:Feed.datas,
+    // };
+  }
+  
   render() {
     return (
-      <View>
-        <Text>This is the Feed screen</Text>
-      </View>
+      <ScrollView>
+        {/* <View>{this.state.name}</View> */}
+
+        {datas.map((item) => (
+          <View style={styles.root}>
+            <PlanView data = {item} />
+            {/* <View style={styles.separator}/> */}
+          </View>
+        ))}
+
+        {/* <PlanView/>
+        <PlanView/> */}
+      </ScrollView>
     )
   }
+  /**
+   * 
+<RkCard rkType='shadowed'>
+          <View rkCardHeader>
+            <Text>Header</Text>
+          </View>      
+          <Image rkCardImg source={require('../data/img/avatars/Image9.png')}/>
+          <View rkCardContent>
+            <Text> quick brown fox jumps over the lazy dog</Text>
+          </View>
+          <View rkCardFooter>
+            <Text>Footer</Text>
+          </View>
+        </RkCard> */
 };
 
+
+const datas = [
+  {
+    username:'yixuanyxyxx emmm what if my name super long what will gonna happen ? i just curious',
+    // username: this.state.name,
+    status: 2, //1:creat 2:update 3:complish 
+    tasks:[{id:1,task:'do smth 1',checked:true},{id:2,task:'do smth 2',checked:false}],
+    likes: 18,
+    comments:[{id:1,content:'comment 1 goodbye everybody i have got to go goodbye everybody i have got to go ',username:'user1'},{id:2,content:'love u ',username:'user2'}],
+    commentText :'',
+    commentLinePlaceholder : 'Encourage your friend !'
+    // comments: 26,
+  // checked:false 
+  },
+  {
+    username:'icelandofmonster',
+    // username : this.state.aboutMe,
+    status: 1, //1:creat 2:update 3:complish 
+    tasks:[{id:1,task:'do smth 1',checked:false},{id:2,task:'do smth 2',checked:false}],
+    likes: 18,
+    comments:[
+      {id:1,content:'comment 1',username:'user1'},
+      {id:2,content:'Mama, just killed a man; Put a gun against his head; Pulled my trigger, now he\'s dead;Mama, life had just begun;But now I\'ve gone and thrown it all away; Mama, ooh, didn\'t mean to make you cry; If I\'m not back again this time tomorrow; Carry on, carry on as if nothing really matters',username:'user2'},
+      {id:3,content:'goodbye everybody i have got to go',username:'user3'}],
+    commentText :'',
+    commentLinePlaceholder : 'Encourage your friend !'
+    // comments: 26,
+    // checked:false 
+}];
+
+
 export default Feed;
+
+
+const styles = RkStyleSheet.create(theme => ({
+	
+  
+  root: {
+    paddingHorizontal: 10,
+    flex:1,
+    paddingVertical: 10,
+    backgroundColor: theme.colors.screen.base,
+  },
+  container:{
+    flex:1,
+  },
+  header: {
+    
+	paddingHorizontal: 10,
+	
+  },
+  bordered: {
+    borderBottomWidth: 1,
+    borderColor: theme.colors.border.base,
+  },
+  
+  section: {
+    flexWrap: "wrap",
+    padding:10,
+	
+  },
+  space: {
+    marginBottom: 3,
+  },
+  separator: {
+    backgroundColor: theme.colors.border.base,
+    alignSelf: 'center',
+    flex: 1,
+    width: 400,
+    height: 1,
+  },
+  buttons: {
+    flexDirection: 'row',
+    paddingVertical: 8,
+  },
+  button: {
+    flex: 1,
+    alignSelf: 'center',
+	
+  },
+}));
