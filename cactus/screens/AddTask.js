@@ -13,8 +13,14 @@ import Icon from 'react-native-vector-icons/AntDesign';
 export class AddTask extends Component {
 	static data = {
 	goal:{id:1, name:''},
-  tasks:[{id:1, task:'',checked:false}],
-	suggestions:['Learning Korean','Learning English','Learning Spanish','Learning Python','Learning Java'],
+  	tasks:[{id:1, task:'',checked:false}],
+	suggestions:[
+					{key: 'Learning Korean'},
+					{key: 'Learning English'},
+					{key: 'Learning Spanish'},
+					{key: 'Learning Python'},
+					{key: 'Learning Java'},
+				],
 	
     
   };
@@ -25,23 +31,28 @@ export class AddTask extends Component {
         //title: '[ Admin ]',
         //headerTitleStyle :{color:'#fff'},
         //headerStyle: {backgroundColor:'#3c3c3c'},
-        headerRight: <Icon style={{ marginLeft:15,color:'green' }} name={'check'} size={25} onPress={() => params.handleSave()} />
+		//headerRight: <Icon style={{ marginLeft:15,color:'green' }} name={'check'} size={25} onPress={() => params.handleSave()} />
+		headerRight: <TouchableOpacity style={{ marginRight:20}} onPress={() => params.handleSave()}>
+					<RkText style={{color:'green',}}>SAVE</RkText>
+					</TouchableOpacity>
     };
 	};
 
 	componentDidMount() {
-		this.props.navigation.setParams({ handleSave:  this._saveDetails });
+		this.props.navigation.setParams({ handleSave:  this.saveChanges });
 		}
 		
 	constructor(props) {
 		super(props);
-		this.ref = firebase.firestore().collection('goals');
-		this._saveDetails=this._saveDetails.bind(this);
-    this.state = {
+		this.user=firebase.auth().currentUser,
+		this.ref = firebase.firestore().collection('users').doc(this.user.uid).collection('goals');
+		this.saveChanges=this.saveChanges.bind(this);
+		this.validateInput=this.validateInput.bind(this);
+    	this.state = {
 		navigation:this.props.navigation,
-	  goal: AddTask.data.goal,
-	  tasks: AddTask.data.tasks,
-	  
+	  	goal: AddTask.data.goal,
+	  	tasks: AddTask.data.tasks,
+		enableScrollViewScroll: true,
 		suggestions: AddTask.data.suggestions,
 		query_result:AddTask.data.suggestions,
 		//if suggestions visible
@@ -52,7 +63,26 @@ export class AddTask extends Component {
 		}
 	};
 	
-	_saveDetails() {
+	validateInput(){
+		//validate goal
+		if (this.state.goal.name=='' || this.state.tasks.length==0){
+			Alert.alert(
+				'Goal',
+				'Please specify your goal and at least one task',
+				[
+				  {text: 'OK'},
+				],
+				{ cancelable: false })
+			  
+		return false;	  	
+		}
+		return true;
+	}
+	saveChanges() {
+		res=this.validateInput()
+		if (res==false){
+			return null;
+		}
 		goal_id=this.state.goal.id.toString();
 		goal=this.state.goal.name
 		//add goal do to collection goals
@@ -113,6 +143,7 @@ export class AddTask extends Component {
 			//increment id
 			_tasks.push({id:prev_id+1,task:'',checked:false})
 			this.setState({tasks:_tasks})
+			
 		}
 		
 	};
@@ -128,7 +159,7 @@ export class AddTask extends Component {
 		}
 		else{
 			for (i=0;i<suggestions.length;i++){
-				if(suggestions[i].toLowerCase().indexOf(text.toLowerCase())!==-1){
+				if(suggestions[i].key.toLowerCase().indexOf(text.toLowerCase().trim())!==-1){
 					_res.push(suggestions[i])
 				}
 			}
@@ -163,7 +194,7 @@ export class AddTask extends Component {
 	}
 	showSuggestions(show){
 		_isVisible=show
-		this.setState({isVisible:_isVisible})
+		this.setState({isVisible:this.state.query_result.length!==0?show:false})
 	}
 	
   render() {
@@ -174,48 +205,70 @@ export class AddTask extends Component {
 	const isVisible=this.state.isVisible
 	const query_result=this.state.query_result
     return (
-			<ScrollView ref='main_scroll' style={styles.root} keyboardShouldPersistTaps='handled'
+		<View  style={styles.root}  onStartShouldSetResponderCapture={() => {
+			this.setState({ enableScrollViewScroll: true });
+		}}> 
+			<ScrollView keyboardShouldPersistTaps='handled'
+			
 			ref={ref => this.scrollView = ref}
-    	onContentSizeChange={(contentWidth, contentHeight)=>{        
-        this.scrollView.scrollToEnd({animated: true});
-    	}}>
+			
+			scrollEnabled={this.state.enableScrollViewScroll}
+			
+			>
 			<View style={styles.goal}>
 				<RkText rkType='primary'>Your goal?</RkText>
-				<RkTextInput placeholder='Add your goal here' onFocus={()=>this.showSuggestions(true)} onBlur={()=>this.showSuggestions(false)} multiline = {true} 
+				<RkTextInput placeholder='Add your goal here' onFocus={()=>this.showSuggestions(true)} 
+				onBlur={()=>this.showSuggestions(false)} multiline={true} maxLength={140}
 				onChangeText={(text)=>this.addGoal(text)} value={goal.name}/>
 			
 			</View>
-			<View style={{paddingHorizontal:10,}}>
-					{isVisible==true &&
-					<ScrollView style={styles.suggestions} keyboardShouldPersistTaps='handled'>
-						{query_result.map((item)=>(
-						<TouchableOpacity style={styles.bordered} onPress={()=>this.setSuggestedValue(item)}>
-							<RkText>{item}</RkText>
-						</TouchableOpacity>
-						))}</ScrollView>
-			}
+			<View style={{paddingHorizontal:10,	}}
+				onStartShouldSetResponderCapture={() => {
+				this.setState({ enableScrollViewScroll: false });
+				if (this.scrollView.contentOffset === 0
+				&& this.state.enableScrollViewScroll === false) {
+				this.setState({ enableScrollViewScroll: true });
+				}
+			  }}>
+			{isVisible==true &&
+				<FlatList
+				keyboardShouldPersistTaps='handled'
+				data={query_result}
+				
+				style={styles.suggestions}
+				renderItem={({item}) => <TouchableOpacity style={styles.bordered} onPress={()=>this.setSuggestedValue(item.key)}>
+											<RkText>{item.key}</RkText>
+										</TouchableOpacity>}
+				/>}
 			</View>
+			
 			<View style={styles.tasks}>
 				<RkText rkType='primary'>Add your task(s)?</RkText>
-			
+				
 				{tasks.map((item) => (
+					
 					<View style={{flexDirection:'row'}}>
 					<TouchableOpacity style={{justifyContent: 'center',}} onPress={()=>this.onItemDelete(item.id)} >
 					<Icon name={'minuscircle'} size={25}  style={{color:'red'}}/>
 					</TouchableOpacity>
 					
 					<RkTextInput style={{flex:1}}
-					multiline = {true} placeholder='Add new task' onChangeText={(text) => this.addTask(text,item.id)} value={item.task}/>
+					
+					multiline = {true} placeholder='Add new task' maxLength={140}
+					onChangeText={(text) => this.addTask(text,item.id)} value={item.task}
+					autoFocus={tasks.length>1 ? item.task==='':false}
+					/>
+				
 				</View>
 				))}
 			</View>
 			<View style={{alignSelf: 'center', paddingBottom:20}}> 
-				<TouchableOpacity onPress={this.onAddNewTaskPress}><Icon name={'pluscircleo'} size={30}/></TouchableOpacity>
+				<TouchableOpacity onPress={()=>this.onAddNewTaskPress()}><Icon name={'pluscircleo'} size={30}/></TouchableOpacity>
 			</View>
 			
 			
 		</ScrollView>
-		
+	</View>
 	
     )
   }
@@ -228,7 +281,7 @@ const styles = RkStyleSheet.create(theme => ({
   
   root: {
     backgroundColor: theme.colors.screen.base,
-	
+	height:'100%'
   },
    goal: {
 		paddingHorizontal:10,
@@ -243,13 +296,12 @@ const styles = RkStyleSheet.create(theme => ({
 		backgroundColor:'white',
 		position:'absolute',
 		zIndex: 1,
-		maxHeight:'50%',
-		
+		maxHeight: 109,
 		alignSelf:'center',
 		borderWidth:1
 	},
   bordered: {
-		padding:5,
+	padding:5,
     borderBottomWidth: 1,
     borderColor: theme.colors.border.base,
 	},

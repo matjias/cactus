@@ -7,18 +7,22 @@
  */
 
 import React, {Component} from 'react';
-import {Platform, StyleSheet, Text, View} from 'react-native';
+import {Platform, StyleSheet, Text, View, Keyboard } from 'react-native';
 import {RkButton} from 'react-native-ui-kitten';
 import Profile from './screens/Profile';
 import MyCactus from './screens/MyCactus';
 import Feed from './screens/Feed';
 import EditProfile from './screens/EditProfile';
 import AddTask from './screens/AddTask';
+import SignUp from './screens/signUp';
+import Login from './screens/login';
+import firebase from 'react-native-firebase';
+
 
 
 
 import Ionicons from 'react-native-vector-icons/AntDesign';
-import { createStackNavigator,createBottomTabNavigator } from 'react-navigation';
+import { createStackNavigator,createBottomTabNavigator} from 'react-navigation';
 import { data } from './data';
 import { bootstrap } from './config/bootstrap';
 
@@ -30,10 +34,17 @@ const instructions = Platform.select({
     'Shake or press menu button for dev menu',
 });
 
+
+const AuthStack=createStackNavigator({
+  Login:Login,
+  SignUp:SignUp,
+})
 const ProfileStack = createStackNavigator({
+ 
   Profile: Profile,
   EditProfile:EditProfile,
   AddTask: AddTask,
+  
 });
 
 ProfileStack.navigationOptions = ({ navigation }) => {
@@ -55,11 +66,11 @@ const FeedStack = createStackNavigator({
 
 
 
-export default createBottomTabNavigator(
+const TabNav= createBottomTabNavigator(
   {
     Profile: ProfileStack,
     Feed: FeedStack,
-	Cactus: MyCactus,
+	  Cactus: MyCactus,
 
   },
   {
@@ -91,16 +102,43 @@ export default createBottomTabNavigator(
 );
 
 type Props = {};
-export class App extends Component<Props> {
-  render() {
-    return (
-	  <View>
-        <Text>This is the main screen with menu</Text>
-		<createBottomTabNavigator/>
-      </View>
-      
-    );
-  }
+export default class App extends Component<Props> {
+constructor() {
+  super();
+  this.state = {
+    loading: true,
+  };
+}
+ /**
+   * When the App component mounts, we listen for any authentication
+   * state changes in Firebase.
+   * Once subscribed, the 'user' parameter will either be null 
+   * (logged out) or an Object (logged in)
+   */
+componentDidMount() {
+  this.authSubscription = firebase.auth().onAuthStateChanged((user) => {
+    this.setState({
+      loading: false,
+      user,
+    });
+  });
+}
+/**
+   * Don't forget to stop listening for authentication state changes
+   * when the component unmounts.
+   */
+componentWillUnmount() {
+  this.authSubscription();
+}
+  
+render() {
+    // The application is initialising
+    if (this.state.loading) return null;
+    // The user is an Object, so they're logged in
+    if (this.state.user!=null) return <TabNav/>;
+    // The user is null, so they're logged out
+    return <AuthStack/>;
+}
 }
 
 const styles = StyleSheet.create({

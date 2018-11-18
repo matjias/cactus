@@ -46,9 +46,8 @@ export class Goal extends RkComponent {
 	  goal: this.props.goal || Goal.data.goal,
     tasks: this.props.tasks ||Goal.data.tasks,
     edit_task_id:-1,
-
-	  
     };
+    console.log(this.state.goal)
   }
   onAddNewTaskPress= () => {
     const _tasks = Object.assign({},this.state.tasks);
