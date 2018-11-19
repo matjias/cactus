@@ -12,23 +12,29 @@ export class Feed extends Component {
   };
   constructor(props) {
     super(props);
-    // this.state = {
-    //   name:'',
-    //   aboutMe:''
-    // };
 
+    //AIM: 
+    //get goal update data from firebase ...
+    //put the data into   varibale datats    so datas = [{...},{...},{...}]
+    //give the each element inside the datas to PlanView class in this way:
+    
+    // {datas.map((item) => (
+    //   <View style={styles.root}>
+    //     <PlanView data = {item} />
+    //     {/* <View style={styles.separator}/> */}
+    //   </View>
+    // ))}
+
+
+    //TRY:
     // this.ref=firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid)
-    //retrieve profile info
-
-
     // this.ref.get().then((doc)=>{if (doc.exists) 
     //           {var user=doc.data()
     //           //retrieve goals
     //           this.state = {
     //             name:user.name,
     //             aboutMe:user.aboutMe}
-    //           }}).catch()
-    
+    //           }}).catch()   
     // this.state = {
     //     datas:Feed.datas,
     // };
@@ -37,7 +43,6 @@ export class Feed extends Component {
   render() {
     return (
       <ScrollView>
-        {/* <View>{this.state.name}</View> */}
 
         {datas.map((item) => (
           <View style={styles.root}>
@@ -46,32 +51,15 @@ export class Feed extends Component {
           </View>
         ))}
 
-        {/* <PlanView/>
-        <PlanView/> */}
       </ScrollView>
     )
   }
-  /**
-   * 
-<RkCard rkType='shadowed'>
-          <View rkCardHeader>
-            <Text>Header</Text>
-          </View>      
-          <Image rkCardImg source={require('../data/img/avatars/Image9.png')}/>
-          <View rkCardContent>
-            <Text> quick brown fox jumps over the lazy dog</Text>
-          </View>
-          <View rkCardFooter>
-            <Text>Footer</Text>
-          </View>
-        </RkCard> */
 };
 
 
 const datas = [
   {
     username:'yixuanyxyxx emmm what if my name super long what will gonna happen ? i just curious',
-    // username: this.state.name,
     status: 2, //1:creat 2:update 3:complish 
     tasks:[{id:1,task:'do smth 1',checked:true},{id:2,task:'do smth 2',checked:false}],
     likes: 18,
@@ -83,7 +71,6 @@ const datas = [
   },
   {
     username:'icelandofmonster',
-    // username : this.state.aboutMe,
     status: 1, //1:creat 2:update 3:complish 
     tasks:[{id:1,task:'do smth 1',checked:false},{id:2,task:'do smth 2',checked:false}],
     likes: 18,
