@@ -54,6 +54,8 @@ export class SignUp extends React.Component {
         email:email,
         name: name,
         aboutMe:aboutMe,
+        cactusName:'Hello bebe',
+        progress:0,
         
     })})
     .catch((error) => {

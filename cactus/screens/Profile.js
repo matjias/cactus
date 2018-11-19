@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, Button, ScrollView} from 'react-native';
+import { View, Text, Alert, ScrollView} from 'react-native';
 import { Avatar } from '../components/avatar';
 import { Goal } from '../components/goal';
 import PopupMenu from '../components/popup';
@@ -20,7 +20,7 @@ export class Profile extends Component {
   static navigationOptions = ({ navigation }) => {
 		const { params = {} } = navigation.state;
     return {
-      title: 'User Profile'.toUpperCase(),
+      title: 'my profile'.toUpperCase(),
         //headerTitleStyle :{color:'#fff'},
         //headerStyle: {backgroundColor:'#3c3c3c'},
 		//headerRight: <Icon style={{ marginLeft:15,color:'green' }} name={'check'} size={25} onPress={() => params.handleSave()} />
@@ -38,10 +38,12 @@ export class Profile extends Component {
       navigation:this.props.navigation,
       aboutMe:null,
       name:null,//this.user.name
-      goals:[]
+      progress:null,
+      goals:[],
     }
-
-    this.ref=firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid)
+    this.userId=firebase.auth().currentUser.uid
+    this.refreshFunction=this.refreshFunction.bind(this)
+    this.ref=firebase.firestore().collection('users').doc(this.userId)
    
     this.onPopupEvent=this.onPopupEvent.bind(this)
 
@@ -49,45 +51,51 @@ export class Profile extends Component {
     this.ref.get().then((doc)=>{if (doc.exists) 
               {var user=doc.data()
               //retrieve goals
-              this.setState({name:user.name,aboutMe:user.aboutMe})
+              this.setState({name:user.name,aboutMe:user.aboutMe,progress:user.progress})
               }}).catch()
 
-    this.ref.collection('goals').get().then((snap1)=>{
-              var goals=[]
-              snap1.forEach((goal) => {
-              _goal={id:goal.data().id, name:goal.data().name}
-              goals.push(_goal)      
-              console.log(goals)
-              //retrieve tasks
-                })
-              return goals;
-          
-              }).then((goals)=>{
-                var new_goals=[];
-                goals.forEach((goal)=>{
-                this.ref.collection('goals').doc(goal.id).collection('tasks').get()
-                //retrieve tasks
-                .then((snap2)=>{
-                  var tasks=[]
-                  snap2.forEach((task)=>{
-                    _task={id:task.data().id,task:task.data().task,checked:task.data().checked}
-                    tasks.push(_task)
-                  })
-                  return tasks
-                }
-                ).then((tasks)=>{goal['tasks']=tasks; new_goals.push(goal);this.setState({goals:new_goals});console.log(new_goals)})})
-              }
-              
-               )
-               .catch((error)=>{console.log(error)})  
+    this.log_ref = firebase.firestore().collection('updates')
                 
   }
+  refreshFunction(){
+    this.retrieveData()
+  }
  
+  retrieveData(){
+    this.ref.collection('goals').where('delete','==',false).get().then((snap1)=>{
+      var goals=[]
+      snap1.forEach((goal) => {
+      _goal={id:goal.data().id, name:goal.data().name,delete:goal.data().delete}
+      goals.push(_goal)      
+      console.log(goals)
+      //retrieve tasks
+        })
+      return goals;
+  
+      }).then((goals)=>{
+        var new_goals=[];
+        goals.forEach((goal)=>{
+        this.ref.collection('goals').doc(goal.id).collection('tasks').where('delete','==',false).get()
+        //retrieve tasks
+        .then((snap2)=>{
+          var tasks=[]
+          snap2.forEach((task)=>{
+            _task={id:parseInt(task.data().id),task:task.data().task,checked:task.data().checked,delete:task.data().delete}
+            tasks.push(_task)
+          })
+          return tasks
+        }
+        ).then((tasks)=>{goal['tasks']=tasks; new_goals.push(goal);this.setState({goals:new_goals});console.log(new_goals)})})
+      }
+      
+       )
+       .catch((error)=>{console.log(error)})  
+  }
 
    componentDidMount() {
     //var loading=true;
     this.props.navigation.setParams({ onPopupEvent:  this.onPopupEvent });
-  
+    this.retrieveData()
     //loading=false;
 	}
   
@@ -113,16 +121,101 @@ export class Profile extends Component {
     return null;
   };
 
- 
+   saveChanges(goal_id,task_id){
+    this.ref.collection('goals').doc(goal_id).collection('tasks')
+    .doc(task_id.toString()).update({ checked: true}).catch((error)=>console.log(error))
+    this.ref.update({progress:this.state.progress}).catch((error)=>console.log(error))
+  }
+
+  onGoalDelete(goal_id){
+    this.ref.collection('goals').doc(goal_id).update({delete:true}).then(
+      this.retrieveData()
+    )
+
+  }
+  
+  onGoalPopupEvent (eventName, index,goal) {
+    if (eventName !== 'itemSelected') return
+    if (index === 0) {
+      this.props.navigation.navigate('AddTask',{goal:{id:goal.id,name:goal.name},
+                                              tasks:goal.tasks, 
+                                              task_ids: goal.tasks.map(a => a.id),action:'update',
+                                              uName:this.state.name,
+                                              refresh:()=>this.refreshFunction()
+                                            });
+    }
+    else {
+      Alert.alert(
+        'Delete',
+        'Are you sure you want to delete this goal and all related tasks?',
+        [
+          {text: 'Cancel'},
+          {text: 'Yes, remove it', onPress:()=>this.onGoalDelete(goal.id)},
+        ],
+        { cancelable: false })
+      }
+    }
+
+  logUpdates(goal,_task){
+    timestamp=Date.now()
+
+    this.log_ref.add({
+      uid:this.userId,
+      name:this.state.name,
+      action:3, //1=set new goal, 2=set new task(s),3 completed task 
+      goal_name:goal.name,
+      likes:0,
+      timestamp:timestamp,
+
+      }).then((docRef)=>{
+
+          this.log_ref.doc(docRef.id).collection('tasks').add(
+            {
+              task:_task.task,
+              checked:_task.checked,
+            }
+          )
+        })
+        
+      .catch()
+  }
   onTaskChecked(e,item, goal_id){
     const _goals = [...this.state.goals] 
     goal_index=this.findObjectByKey(_goals,'id',goal_id)
     _tasks=[..._goals[goal_index].tasks]
     task_index=this.findObjectByKey(_tasks,'id',item.id)
-    _tasks[task_index].checked ='true';
+    _tasks[task_index].checked =true;
     _goals[goal_index].tasks=_tasks
-    this.setState({goals:_goals});
+    _progress=this.state.progress
+    _progress=_progress+1
+    //save to changes to db
+    this.logUpdates(_goals[goal_index],_tasks[task_index])
+    this.setState({goals:_goals, progress:_progress},()=>this.saveChanges(goal_id,item.id));
+    
     };
+    getPrevId(arr){
+      _arr=[];
+      
+      for(var i=0;i<arr.length;i++){
+        _arr.push(arr[i].id);
+      }
+      console.log(_arr)
+      return Math.max(..._arr)
+    }
+    
+    addNewGoal(){
+      //find max id from goals add 1
+      id=1
+      if (this.state.goals.length>0){
+      
+        last_id=this.getPrevId(this.state.goals)
+        id=last_id+1
+      }
+      this.props.navigation.navigate('AddTask', {goal:{id:id,name:''},
+                                                tasks:[{id:1, task:'',checked:false, delete:false}],
+                                                uName:this.state.name,
+                                                refresh: ()=>this.refreshFunction()})
+    }
   render() {
     const name =this.state.name
     const aboutMe=this.state.aboutMe
@@ -143,7 +236,8 @@ export class Profile extends Component {
 	  </View>
 	  
       <View style={styles.buttons}>
-        <RkButton style={styles.button} rkType='clear link' onPress={() => this.props.navigation.navigate('AddTask')} >NEW GOAL</RkButton>
+        <RkButton style={styles.button} rkType='clear link' 
+        onPress={() => this.addNewGoal()} >NEW GOAL</RkButton>
         <View style={styles.separator} />
         <RkButton style={styles.button} rkType='clear link'>NOTIFICATIONS</RkButton>
       </View>
@@ -153,10 +247,15 @@ export class Profile extends Component {
 
 
       <View style={{padding:5}}>
-        <RkText rkType='primary'>{goal.name}</RkText>
+      <View style={{flexDirection:'row'}}>
+        <RkText rkType='primary' style={{flex:1}}>{goal.name}</RkText>
+        <View style={{justifyContent: 'center',}}>
+          <PopupMenu actions={['Edit', 'Delete']} onPress={(e,index)=>this.onGoalPopupEvent(e,index,goal)} />
+        </View>
+      </View>
       <View>
         {goal.tasks.length>0 && goal.tasks.map((item) => (
-        <CheckBox checked={item.checked=='true'} title={item.task} 
+        <CheckBox checked={item.checked} title={item.task} 
         checkedIcon='check'
         containerStyle={{backgroundColor:'transparent',borderWidth: 0,flex:1}} 
         onIconPress={(e) => this.onTaskChecked(e,item,goal.id)}/>))}

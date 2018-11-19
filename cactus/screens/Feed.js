@@ -3,16 +3,22 @@ import { View, Text, Button,ScrollView ,Image} from 'react-native';
 import {RkCard,RkStyleSheet} from 'react-native-ui-kitten';
 import { data } from '../data/';
 import { PlanView } from '../components/planView';
-// import firebase from 'react-native-firebase';
+import firebase from 'react-native-firebase';
 
 export class Feed extends Component {
 
   static navigationOptions = {
-    title: 'Cactus',
+    title: 'Feed', //Cactus?? kinda misleading 
   };
+
+  
+  
   constructor(props) {
     super(props);
-
+    this.ref=firebase.firestore().collection('updates')
+    this.state={
+      datas:null
+    }
     //AIM: 
     //get goal update data from firebase ...
     //put the data into   varibale datats    so datas = [{...},{...},{...}]
@@ -39,12 +45,47 @@ export class Feed extends Component {
     //     datas:Feed.datas,
     // };
   }
+
+  componentDidMount(){
+   this.retrieveData()
+  }
+  retrieveData(){
+    this.ref.orderBy('timestamp','desc').get().then((snap1)=>{
+      var updates=[]
+      snap1.forEach((doc) => {
+      update={id:doc.id, user_id:doc.data().uid,username:doc.data().name, status:doc.data().action,
+        goal_name:doc.data().goal_name, likes:doc.data().likes}
+      updates.push(update)      
+      //retrieve tasks
+        })
+      return updates;
+  
+      }).then((updates)=>{
+        var final_updates=[];
+        updates.forEach((doc)=>{
+        this.ref.doc(doc.id).collection('tasks').get()
+        //retrieve tasks
+        .then((snap2)=>{
+          var tasks=[]
+          snap2.forEach((task)=>{
+            _task={task:task.data().task,checked:task.data().checked}
+            tasks.push(_task)
+          })
+          return tasks
+        }
+        ).then((tasks)=>{doc['tasks']=tasks; final_updates.push(doc);this.setState({datas:final_updates})})})
+      }
+      
+       )
+       .catch((error)=>{console.log(error)})  
+  }
   
   render() {
+    const datas=this.state.datas
     return (
       <ScrollView>
 
-        {datas.map((item) => (
+        {datas!==null && datas.map((item) => (
           <View style={styles.root}>
             <PlanView data = {item} />
             {/* <View style={styles.separator}/> */}
@@ -55,12 +96,12 @@ export class Feed extends Component {
     )
   }
 };
-
-
 const datas = [
   {
+    id:1,
     username:'yixuanyxyxx emmm what if my name super long what will gonna happen ? i just curious',
     status: 2, //1:creat 2:update 3:complish 
+    goal_name:'new goal1',
     tasks:[{id:1,task:'do smth 1',checked:true},{id:2,task:'do smth 2',checked:false}],
     likes: 18,
     comments:[{id:1,content:'comment 1 goodbye everybody i have got to go goodbye everybody i have got to go ',username:'user1'},{id:2,content:'love u ',username:'user2'}],
@@ -70,8 +111,10 @@ const datas = [
   // checked:false 
   },
   {
+    id:1,
     username:'icelandofmonster',
     status: 1, //1:creat 2:update 3:complish 
+    goal_name:'new goal',
     tasks:[{id:1,task:'do smth 1',checked:false},{id:2,task:'do smth 2',checked:false}],
     likes: 18,
     comments:[
@@ -83,6 +126,8 @@ const datas = [
     // comments: 26,
     // checked:false 
 }];
+
+
 
 
 export default Feed;

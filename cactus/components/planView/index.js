@@ -76,6 +76,8 @@ export class PlanView extends RkComponent {
             username: this.props.data.username || PlanView.data.username,
             status: this.props.data.status || PlanView.data.status,
             tasks: this.props.data.tasks ||PlanView.data.tasks,
+            goal_name: this.props.data.goal_name, 
+
             edit_task_id:-1,
         };
     }
@@ -186,13 +188,18 @@ export class PlanView extends RkComponent {
         // const comments = this.state.comments + (this.props.showLabel ? ' Comments' : '');
         const comments = this.state.comments;
         const tasks=this.state.tasks
+        const goal_name=this.state.goal_name
+
         const username=this.state.username
 
         if(this.state.status ==1){
-            status= 'just created a new plan !';
+            status= 'just set a new goal !';
         }else if(this.state.status == 2){
-            status= 'just updated this plan !';
+            status= 'just created new plan !';
+        }else{
+            status= 'just completed a task !';
         }
+
         
         const edit_task_id=this.state.edit_task_id
 
@@ -204,7 +211,10 @@ export class PlanView extends RkComponent {
                 <View>
                     <RkText rkType='primary'>{status}</RkText>
                 </View>
-                {tasks.map((item) => (
+                <View>
+                    <RkText rkType='primary'>{goal_name}</RkText>
+                </View>
+                {tasks.length>0 && tasks.map((item) => (
                 // <View  style={{flex:1, flexDirection:'row', paddingVertical: 10,paddingHorizontal: 10}}>
                 <View>
                     <CheckBox checked={item.checked} title={item.task} containerStyle={{backgroundColor:'transparent',borderWidth: 0,flex:1}} />
