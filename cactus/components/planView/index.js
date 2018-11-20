@@ -202,7 +202,7 @@ export class PlanView extends RkComponent {
                     <RkText rkType='primary'>{username}</RkText>
                 </View>
                 <View>
-                    <RkText rkType='primary'>{status}</RkText>
+                    <RkText rkType='primary hintColor'>{status}</RkText>
                 </View>
                 {tasks.map((item) => (
                 // <View  style={{flex:1, flexDirection:'row', paddingVertical: 10,paddingHorizontal: 10}}>
@@ -210,19 +210,18 @@ export class PlanView extends RkComponent {
                     <CheckBox checked={item.checked} title={item.task} containerStyle={{backgroundColor:'transparent',borderWidth: 0,flex:1}} />
                 </View>
                 ))}    
-    
-                <View style={container}>
-                    <View style={section}>
-                        <RkButton rkType='clear' onPress={this.onLikeButtonPressed}>
-                            <RkText rkType='awesome primary' style={icon}><Ionicons name={'heart'}/></RkText>
-                            <RkText rkType='primary primary4' style={label}>{likes}</RkText>
-                        </RkButton>
-                    </View>
+                <View style={{paddingLeft: 10}}>
+                    <RkButton rkType='clear' onPress={this.onLikeButtonPressed}>
+                        <RkText rkType='primary' style={icon}><Ionicons name={'heart'}/></RkText>
+                        <RkText rkType='primary' style={label}>{' '+likes}</RkText>
+                    </RkButton>
+                </View>
 
+                <View>
                     {comments.map((item) => (
                     // <View  style={{flex:1, flexDirection:'row', paddingVertical: 10,paddingHorizontal: 10}}>
                     <View>
-                        <RkText >{item.username+':'}</RkText>
+                        <RkText rkType='primary primary2'>{item.username+':'}</RkText>
                         {/* <RkText style={{flexDirection:'row'}} > : </RkText> */}
                         <RkText  >{item.content}</RkText>
                     </View>
