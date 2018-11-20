@@ -277,7 +277,7 @@ export class PlanView extends RkComponent {
                 <View style={{paddingLeft: 10}}>
                     <RkButton rkType='clear' onPress={this.onLikeButtonPressed}>
                         <RkText rkType='primary6'> </RkText>
-                        <RkText rkType='primary' ><Ionicons style={{fontSize:27}} name={hasLiked==true ? 'heart':'heart-o'}/></RkText>
+                        <RkText rkType='primary' ><Icon style={{fontSize:27}} name={hasLiked==true ? 'heart':'heart-o'}/></RkText>
                      
                         <RkText rkType='primary' style={label}>{'  '+likes}</RkText>
                     </RkButton>
