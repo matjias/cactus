@@ -12,7 +12,7 @@ export const PlanViewTypes = (theme) => ({
         flex: 1,
       },
       icon: {
-        fontSize: 20,
+        paddingVertical: 40,
       },
       label: {
         marginLeft: 8,

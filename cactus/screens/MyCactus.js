@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { View, Text, Button, ScrollView, ProgressBarAndroid, Image, AppRegistry } from 'react-native';
+//import { CactusStats } from '../components/cacStats.js';
 
 import {
   RkText,
@@ -29,19 +30,8 @@ RkTheme.setType('RkText','cactusName',{
 /* Variables */
 var completedGoals = 0;
 
-//var ref = firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid);
-
-/* ref.get().then( doc => { if(doc.exists){
-	  		completedGoals = doc.data().progress
-	  	}
-	  }).catch(); */
-
 var initialName = ''
-/* 
-ref.get().then( doc => { if(doc.exists){
-	  		initialName = doc.data().cactusName
-	  	}
-	  }).catch(); */
+
 
 /* Objects for the Cactus Screen */
 class CactusName extends Component {
@@ -101,8 +91,7 @@ class CactusName extends Component {
 class Cactus extends Component {
 
 	constructor(props) {
-		super(props);
-		
+	  super(props);
 	  this.ref = firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid);
 	  this.state = {
 	  	progress: completedGoals,
@@ -175,7 +164,7 @@ class ProgressBar extends Component {
 		if ( completedGoals < 10 ){
 			return (
 				<View style = {styles.bar}>
-					<View style = {{flex: 0.2, justifyContent: 'center', alignItems: 'center'}}><Text>10</Text></View>
+					<View style = {{flex: 0.2, justifyContent: 'center', alignItems: 'center'}}><Text>{completedGoals}/10</Text></View>
 					<View style={{ flex: 0.6, transform: [{ rotate: '-90deg' }], justifyContent: 'center', alignItems: 'center' }}>					
 						<Progress.Bar 
 							progress = {(completedGoals)/(10)} 
@@ -190,7 +179,7 @@ class ProgressBar extends Component {
 		} else if ( completedGoals < 25 ){
 			return (
 				<View style = {styles.bar}>
-					<View style = {{flex: 0.2, justifyContent: 'center', alignItems: 'center'}}><Text>25</Text></View>
+					<View style = {{flex: 0.2, justifyContent: 'center', alignItems: 'center'}}><Text>{completedGoals}/25</Text></View>
 					<View style={{ flex: 0.6, transform: [{ rotate: '-90deg' }], justifyContent: 'center', alignItems: 'center' }}>					
 						<Progress.Bar 
 							progress = {(completedGoals)/(25)} 
@@ -205,7 +194,7 @@ class ProgressBar extends Component {
 		} else {
 			return (
 				<View style = {styles.bar}>
-					<View style = {{flex: 0.2, justifyContent: 'center', alignItems: 'center'}}><Text>100</Text></View>
+					<View style = {{flex: 0.2, justifyContent: 'center', alignItems: 'center'}}><Text>{completedGoals}/100</Text></View>
 					<View style={{ flex: 0.6, transform: [{ rotate: '-90deg' }], justifyContent: 'center', alignItems: 'center' }}>					
 						<Progress.Bar 
 							progress = {(completedGoals)/(100)} 
@@ -221,20 +210,115 @@ class ProgressBar extends Component {
 	}
 }
 
-class StatisticsBox extends Component {
+class CactusStats extends Component {
 
 	constructor(props) {
-	  super(props);
-	}
+    super(props);
+    this.state={
+      navigation:this.props.navigation,
+      aboutMe:null,
+      name:null,//this.user.name
+      goals:[],
+      taskCounter:0,
+      tasksCompleted:0,
+      comp:[]
+    }
+
+    this.ref=firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid)
+   
+    this.state.taskCounter++;
+
+    //retrieve profile info
+    this.ref.get().then((doc)=>{if (doc.exists) 
+      {var user=doc.data()
+      //retrieve goals
+      this.setState({name:user.name,aboutMe:user.aboutMe})
+      }}).catch()
+
+    this.ref.collection('goals').get().then((snap1)=>{
+              var goals = []
+              snap1.forEach((goal) => {
+              _goal={id:goal.data().id, name:goal.data().name}
+              goals.push(_goal)      
+              console.log(goals)
+              //retrieve tasks
+                })
+              return goals;
+          
+              }).then((goals)=>{
+                var new_goals = [];
+                goals.forEach((goal) => {
+                this.ref.collection('goals').doc(goal.id).collection('tasks').get()
+                //retrieve tasks
+                .then((snap2)=>{
+                  var tasks=[]
+                  snap2.forEach((task)=>{
+                    _task={id:task.data().id,task:task.data().task,checked:task.data().checked}
+                    if(_task.checked != "false"){
+                      this.state.tasksCompleted++;
+                    } 
+                    tasks.push(_task)
+                  })
+                  this.state.taskCounter = tasks.length;
+                  return tasks
+                }
+                ).then((tasks)=>{goal['tasks']=tasks; new_goals.push(goal);this.setState({goals:new_goals});console.log(new_goals)})})
+              }
+              
+               )
+               .catch((error)=>{console.log(error)})  
+                
+  }
 
 	render() {
-		return (
+	    const goals=this.state.goals
+	    
+	    return (
 
-			<View>
-				<Text>Hello Bebe</Text>
-			</View>
-		)
-	}
+	        <View style = {styles.section, styles.stats}>
+	          <View style={styles.statRow}>
+	            <View style={{flex: 1}}>
+	              <Text>Languages:</Text>
+	            </View>
+	            <View style={{flex: 1}}>
+	              <Text style={{textAlign: 'right'}}>
+	                {goals.length>0 && goals.map((goal)=>(goal.name + ", "))}
+	              </Text>
+	            </View>
+	          </View>
+	          <View style={styles.statRow}>
+	            
+	            <View style={{flex: 1}}>
+	              <Text>Total Goals:</Text>
+	            </View>
+	            <View style={{flex: 1}}>
+	              <Text style={{textAlign: 'right'}}>{goals.length}</Text>
+	            </View>
+	            
+	          </View>
+
+	          <View style={styles.statRow}>
+            
+	            <View style={{flex: 1}}>
+	              <Text>Completed Tasks:</Text>
+	            </View>
+	            <View style={{flex: 1}}>
+	              <Text style={{textAlign: 'right'}}>{this.state.tasksCompleted + "/" + this.state.taskCounter}</Text>
+	            </View>
+	            
+	          </View>
+	          <View style={styles.statRow}>
+	            
+	            <View style={{flex: 1}}>
+	              <Text>Participation:</Text>
+	            </View>
+	            <View style={{flex: 1}}>
+	              <Text style={{textAlign: 'right'}}>{this.state.comp}</Text>
+	            </View>
+	          </View>
+	         </View>
+	    )
+  	}
 }
 /* End of Objects for the Cactus Screen */
 
@@ -252,7 +336,8 @@ export class MyCactus extends Component {
 
 	onFocus(){
 		this.setState({isFocused: true})
-		this.ref.get().then( doc => { if(doc.exists){
+		ref = firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid);
+		ref.get().then( doc => { if(doc.exists){
 	  		completedGoals = doc.data().progress
 	  	}
 	  }).catch();
@@ -260,7 +345,8 @@ export class MyCactus extends Component {
 
 	noFocus(){
 		this.setState({isFocused: false})	
-		this.ref.get().then( doc => { if(doc.exists){
+		ref = firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid);
+		ref.get().then( doc => { if(doc.exists){
 	  		completedGoals = doc.data().progress
 	  	}
 	  }).catch();
@@ -306,9 +392,8 @@ export class MyCactus extends Component {
 	      	</View>
 
 	      {/* Here goes the statistics section*/}
-	        <View style = {styles.section, styles.stats}>
-	        	<StatisticsBox />
-	      	</View>
+	        	<CactusStats />
+	      	
 	      </View>
 	    )
 	  }
@@ -322,7 +407,12 @@ export default MyCactus;
 /* Style Sheet for the page */
 const styles = RkStyleSheet.create(theme => ({
 	
-  
+  statRow: {
+  	marginLeft: 10,
+  	marginRight: 10,
+  	flex: 1, 
+  	flexDirection: 'row',
+  },
   root: {
     backgroundColor: theme.colors.screen.base,
   },
@@ -385,8 +475,7 @@ const styles = RkStyleSheet.create(theme => ({
   stats: {
   	flex: 1, 
   	flexDirection: 'column',
-  	alignSelf:'stretch', 
-  	backgroundColor: '#eee',
+  	alignSelf:'stretch',
   	justifyContent: 'center', 
   	alignItems: 'center', 
   },

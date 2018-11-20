@@ -193,13 +193,35 @@ export class PlanView extends RkComponent {
         }
     }
 
+    onPostReport(){
+        Alert.alert(
+            'Lækker',
+            'Thank you for the contribution!',
+        )
+    }
+
+    onPopupReport (eventName, index) {
+        if (eventName !== 'itemSelected') return
+        //const _edit_id=id
+        if (index === 0) {
+          Alert.alert("Dear Cactus",
+            'Are you sure you want to report this post?',
+            [
+                {text: 'Cancel'},
+                {text: 'Yes, report', onPress:() => this.onPostReport()},
+            ],
+            {cancelable: false})
+        }
+    }
+
     render() {
 
         const {
             container, section, icon, label,task,
         } = this.defineStyles();
 
-        const likes = this.state.likes + (this.props.showLabel ? ' Likes' : '');
+        var likes = this.state.likes ;
+        // const likes = this.state.likes + (this.props.showLabel ? ' Likes' : '');
         // const comments = this.state.comments + (this.props.showLabel ? ' Comments' : '');
         const comments = this.state.comments;
         const tasks=this.state.tasks
@@ -215,6 +237,11 @@ export class PlanView extends RkComponent {
             status= 'just completed a task !';
         }
 
+        if(likes>=1){
+            likes = likes + ' likes';
+        }else{
+            likes = likes + ' like';
+        }
         
         const hasLiked=this.state.hasLiked
 
@@ -226,9 +253,15 @@ export class PlanView extends RkComponent {
                 <View>
                     <RkText rkType='primary hintColor'>{status}</RkText>
                 </View>
-                <View>
-                    <RkText rkType='primary'>{goal_name}</RkText>
+                <View style = {{flexDirection: 'row'}}>
+                    <View style = {{flex: 1}}>
+                        <RkText rkType='primary'>{'Goal Name: '+goal_name}</RkText>
+                    </View>
+                    <View style={{justifyContent: 'center'}}>
+                        <PopupMenu actions={['Report']}  onPress={(e,index)=>this.onPopupReport(e,index)} />
+                    </View>
                 </View>
+    		
                 {tasks.length>0 && tasks.map((item) => (
                 // <View  style={{flex:1, flexDirection:'row', paddingVertical: 10,paddingHorizontal: 10}}>
                 <View>
@@ -243,40 +276,45 @@ export class PlanView extends RkComponent {
 
                 <View style={{paddingLeft: 10}}>
                     <RkButton rkType='clear' onPress={this.onLikeButtonPressed}>
-                        <RkText rkType='primary' style={icon}><Icon name={hasLiked==true ? 'heart':'heart-o'}/></RkText>
-                        <RkText rkType='primary' style={label}>{' '+likes}</RkText>
+                        <RkText rkType='primary6'> </RkText>
+                        <RkText rkType='primary' ><Ionicons style={{fontSize:27}} name={hasLiked==true ? 'heart':'heart-o'}/></RkText>
+                     
+                        <RkText rkType='primary' style={label}>{'  '+likes}</RkText>
                     </RkButton>
                 </View>
 
-                <View>
-                    {comments.map((item) => (
-                    // <View  style={{flex:1, flexDirection:'row', paddingVertical: 10,paddingHorizontal: 10}}>
-                    <View>
-                        <RkText rkType='primary primary2'>{item.username+':'}</RkText>
-                        {/* <RkText style={{flexDirection:'row'}} > : </RkText> */}
-                        <RkText  >{item.content}</RkText>
-                    </View>
-                    ))}
-   
-                    <View>
-                        <RkTextInput 
-                        label={<Ionicons name={'thumbs-up'}/>} 
-                        rkType='rounded' 
-                        id = 'commentLine'
-                        multiline = {false} 
-                        // placeholder = 'Encourage your friend !'
-                        placeholder = {PlanView.data.commentLinePlaceholder }
-                        // value = {PlanView.data.commentLinePlaceholder }
-                        onChangeText={(text) => this.onTaskEdit(text)}/> 
-                        {/* <RkButton rkType='clear' onPress={this.onEditDone}>
-                            <RkText rkType='awesome primary' style={icon}><Ionicons name={'heart'}/></RkText>
-                            <RkText rkType='primary primary4' style={label}>{likes}</RkText>
-                        </RkButton> */}
-                    </View>
-       
-                </View>
+
 	        </View>
     );
 }
 }
 
+
+// <View>
+// <RkText >Comments: </RkText>
+// {comments.map((item) => (
+// // <View  style={{flex:1, flexDirection:'row', paddingVertical: 10,paddingHorizontal: 10}}>
+// <View>
+//     <RkText rkType='primary primary2'>{item.username+':'}</RkText>
+//     <RkText  >{item.content}</RkText>
+// </View>
+// ))}
+
+// <View>
+//     <Ionicons style={{fontSize:27, flex:1, flexDirection:'row'}} name={'heart'}/>
+//     <RkTextInput 
+//     // style={{flex:1,flexDirection:'row'}}
+//     // label={<Ionicons name={'thumbs-up'}/>} 
+//     rkType='rounded' 
+//     id = 'commentLine'
+//     multiline = {false} 
+//     // placeholder = 'Encourage your friend !'
+//     placeholder = {PlanView.data.commentLinePlaceholder }
+//     // value = {PlanView.data.commentLinePlaceholder }
+//     onChangeText={(text) => this.onTaskEdit(text)}/> 
+//     {/* <RkButton rkType='clear' onPress={this.onEditDone}>
+//         <RkText rkType='awesome primary' style={icon}><Ionicons name={'heart'}/></RkText>
+//         <RkText rkType='primary primary4' style={label}>{likes}</RkText>
+//     </RkButton> */}
+// </View>
+// </View>
