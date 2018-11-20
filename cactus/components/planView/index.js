@@ -71,9 +71,11 @@ export class PlanView extends RkComponent {
   
     constructor(props) {
         super(props);
+        console.log(this.props.data.likes)
+
         this.ref= firebase.firestore().collection('updates')
         this.state = {
-            likes: this.props.data.likes || PlanView.data.likes,
+            likes: this.props.data.likes,
             comments: this.props.data.comments || PlanView.data.comments,
             username: this.props.data.username || PlanView.data.username,
             status: this.props.data.status || PlanView.data.status,
@@ -192,6 +194,7 @@ export class PlanView extends RkComponent {
     }
 
     render() {
+
         const {
             container, section, icon, label,task,
         } = this.defineStyles();
@@ -213,7 +216,7 @@ export class PlanView extends RkComponent {
         }
 
         
-        const edit_task_id=this.state.edit_task_id
+        const hasLiked=this.state.hasLiked
 
         return (
             <View style={container}>
@@ -240,7 +243,7 @@ export class PlanView extends RkComponent {
 
                 <View style={{paddingLeft: 10}}>
                     <RkButton rkType='clear' onPress={this.onLikeButtonPressed}>
-                        <RkText rkType='primary' style={icon}><Ionicons name={'heart'}/></RkText>
+                        <RkText rkType='primary' style={icon}><Icon name={hasLiked==true ? 'heart':'heart-o'}/></RkText>
                         <RkText rkType='primary' style={label}>{' '+likes}</RkText>
                     </RkButton>
                 </View>

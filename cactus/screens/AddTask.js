@@ -52,7 +52,6 @@ export class AddTask extends Component {
 		
 	constructor(props) {
 		super(props);
-		
 		this.userId=firebase.auth().currentUser.uid,
 		this.ref = firebase.firestore().collection('users').doc(this.userId).collection('goals');
 		this.log_ref = firebase.firestore().collection('updates')

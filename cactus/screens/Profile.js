@@ -23,8 +23,8 @@ export class Profile extends Component {
         //headerTitleStyle :{color:'#fff'},
         //headerStyle: {backgroundColor:'#3c3c3c'},
 		//headerRight: <Icon style={{ marginLeft:15,color:'green' }} name={'check'} size={25} onPress={() => params.handleSave()} />
-		  headerRight: <View style={{justifyContent: 'center',}}>
-      <PopupMenu actions={['Edit profile', 'Sign out']} onPress={(e,index)=>params.onPopupEvent(e,index)} />
+		  headerRight: <View style={{justifyContent: 'center',marginRight:10}}>
+      <PopupMenu actions={['Sign out']} onPress={(e,index)=>params.onPopupEvent(e,index)} />
     </View>
     };
 	};
@@ -101,15 +101,12 @@ export class Profile extends Component {
   onPopupEvent (eventName, index) {
     if (eventName !== 'itemSelected') return
     if (index === 0) {
-      this.state.navigation.navigate('EditProfile')
-    }
-    else {
+      //this.state.navigation.navigate('EditProfile')
       firebase.auth().signOut().catch((error) => {
         const { code, message } = error;
-        console.log(code,message)
-        
-      });
+        console.log(code,message)})
     }
+  
   }
   findObjectByKey(array, key, value) {
     for (var i = 0; i < array.length; i++) {
@@ -214,7 +211,7 @@ export class Profile extends Component {
     return (
 	
      <ScrollView style={styles.root}>
-	  <View style={[styles.userInfo, styles.bordered]}>
+	  <View style={styles.userInfo}>
 	  
 		   <View style={[styles.header,styles.section]}>
 			<Avatar img={require('../data/img/avatars/Image1.png')} rkType='big' />
@@ -227,10 +224,8 @@ export class Profile extends Component {
 	  </View>
 	  
       <View style={styles.buttons}>
-        <RkButton style={styles.button} rkType='clear link' 
-        onPress={() => this.addNewGoal()} >NEW GOAL</RkButton>
-        <View style={styles.separator} />
-        <RkButton style={styles.button} rkType='clear link'>NOTIFICATIONS</RkButton>
+        <RkButton style={[styles.button,styles.bordered]}     contentStyle={{color: 'green', marginVertical:15}} rkType='clear link' 
+        onPress={() => this.addNewGoal()} >ADD NEW GOAL</RkButton>
       </View>
 	  
 	  <View style={styles.goalContainer}>
@@ -283,6 +278,8 @@ const styles = RkStyleSheet.create(theme => ({
   },
   bordered: {
     borderBottomWidth: 1,
+    borderTopWidth: 1,
+
     borderColor: theme.colors.border.base,
   },
   
@@ -307,6 +304,7 @@ const styles = RkStyleSheet.create(theme => ({
     paddingVertical: 8,
   },
   button: {
+ 
     flex: 1,
     alignSelf: 'center',
 	
