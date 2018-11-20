@@ -280,37 +280,38 @@ export class PlanView extends RkComponent {
                     </RkButton>
                 </View>
 
-                <View>
-                    <RkText >Comments: </RkText>
-                    {comments.map((item) => (
-                    // <View  style={{flex:1, flexDirection:'row', paddingVertical: 10,paddingHorizontal: 10}}>
-                    <View>
-                        <RkText rkType='primary primary2'>{item.username+':'}</RkText>
-                        {/* <RkText style={{flexDirection:'row'}} > : </RkText> */}
-                        <RkText  >{item.content}</RkText>
-                    </View>
-                    ))}
-   
-                    <View>
-                        <Ionicons style={{fontSize:27, flex:1}} name={'heart'}/>
-                        <RkTextInput 
-                        // label={<Ionicons name={'thumbs-up'}/>} 
-                        rkType='rounded' 
-                        id = 'commentLine'
-                        multiline = {false} 
-                        // placeholder = 'Encourage your friend !'
-                        placeholder = {PlanView.data.commentLinePlaceholder }
-                        // value = {PlanView.data.commentLinePlaceholder }
-                        onChangeText={(text) => this.onTaskEdit(text)}/> 
-                        {/* <RkButton rkType='clear' onPress={this.onEditDone}>
-                            <RkText rkType='awesome primary' style={icon}><Ionicons name={'heart'}/></RkText>
-                            <RkText rkType='primary primary4' style={label}>{likes}</RkText>
-                        </RkButton> */}
-                    </View>
-       
-                </View>
+
 	        </View>
     );
 }
 }
 
+
+// <View>
+// <RkText >Comments: </RkText>
+// {comments.map((item) => (
+// // <View  style={{flex:1, flexDirection:'row', paddingVertical: 10,paddingHorizontal: 10}}>
+// <View>
+//     <RkText rkType='primary primary2'>{item.username+':'}</RkText>
+//     <RkText  >{item.content}</RkText>
+// </View>
+// ))}
+
+// <View>
+//     <Ionicons style={{fontSize:27, flex:1, flexDirection:'row'}} name={'heart'}/>
+//     <RkTextInput 
+//     // style={{flex:1,flexDirection:'row'}}
+//     // label={<Ionicons name={'thumbs-up'}/>} 
+//     rkType='rounded' 
+//     id = 'commentLine'
+//     multiline = {false} 
+//     // placeholder = 'Encourage your friend !'
+//     placeholder = {PlanView.data.commentLinePlaceholder }
+//     // value = {PlanView.data.commentLinePlaceholder }
+//     onChangeText={(text) => this.onTaskEdit(text)}/> 
+//     {/* <RkButton rkType='clear' onPress={this.onEditDone}>
+//         <RkText rkType='awesome primary' style={icon}><Ionicons name={'heart'}/></RkText>
+//         <RkText rkType='primary primary4' style={label}>{likes}</RkText>
+//     </RkButton> */}
+// </View>
+// </View>
