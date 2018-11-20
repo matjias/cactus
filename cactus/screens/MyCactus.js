@@ -107,7 +107,7 @@ class Cactus extends Component {
 	}
 
 	render() {
-		if ( completedGoals < 10 ){
+		if ( completedGoals < 5 ){
 			return (
 				<View>
 					<Image 
@@ -117,7 +117,7 @@ class Cactus extends Component {
 				</View>
 			)
 
-		} else if ( completedGoals < 25 ){
+		} else if ( completedGoals < 15 ){
 			return (
 				<View>
 					<Image 
@@ -161,13 +161,13 @@ class ProgressBar extends Component {
 	}
 
 	render() {
-		if ( completedGoals < 10 ){
+		if ( completedGoals < 5 ){
 			return (
 				<View style = {styles.bar}>
-					<View style = {{flex: 0.2, justifyContent: 'center', alignItems: 'center'}}><Text>{completedGoals}/10</Text></View>
+					<View style = {{flex: 0.2, justifyContent: 'center', alignItems: 'center'}}><Text>{completedGoals}/5</Text></View>
 					<View style={{ flex: 0.6, transform: [{ rotate: '-90deg' }], justifyContent: 'center', alignItems: 'center' }}>					
 						<Progress.Bar 
-							progress = {(completedGoals)/(10)} 
+							progress = {(completedGoals)/(5)} 
 							width = {200}
 							height = {15}
 							color = '#fece00'
@@ -176,13 +176,13 @@ class ProgressBar extends Component {
 					<View style = {{flex: 0.2, justifyContent: 'center', alignItems: 'center'}}><Text>0</Text></View>
 				</View>
 			)
-		} else if ( completedGoals < 25 ){
+		} else if ( completedGoals < 15 ){
 			return (
 				<View style = {styles.bar}>
-					<View style = {{flex: 0.2, justifyContent: 'center', alignItems: 'center'}}><Text>{completedGoals}/25</Text></View>
+					<View style = {{flex: 0.2, justifyContent: 'center', alignItems: 'center'}}><Text>{completedGoals}/15</Text></View>
 					<View style={{ flex: 0.6, transform: [{ rotate: '-90deg' }], justifyContent: 'center', alignItems: 'center' }}>					
 						<Progress.Bar 
-							progress = {(completedGoals)/(25)} 
+							progress = {(completedGoals)/(15)} 
 							width = {200}
 							height = {15}
 							color = '#ddc293'
@@ -194,10 +194,10 @@ class ProgressBar extends Component {
 		} else {
 			return (
 				<View style = {styles.bar}>
-					<View style = {{flex: 0.2, justifyContent: 'center', alignItems: 'center'}}><Text>{completedGoals}/100</Text></View>
+					<View style = {{flex: 0.2, justifyContent: 'center', alignItems: 'center'}}><Text>{completedGoals}/50</Text></View>
 					<View style={{ flex: 0.6, transform: [{ rotate: '-90deg' }], justifyContent: 'center', alignItems: 'center' }}>					
 						<Progress.Bar 
-							progress = {(completedGoals)/(100)} 
+							progress = {(completedGoals)/(50)} 
 							width = {200}
 							height = {15}
 							color = '#019ade'
@@ -277,45 +277,45 @@ class CactusStats extends Component {
 
 	        <View style = {styles.section, styles.stats}>
 	          <View style={styles.statRow}>
-	            <View style={{flex: 1}}>
-	              <Text>Languages:</Text>
+	            <View style={{flex: 1,paddingVertical:20}}>
+	              <RkText rkType='rounded'>Languages:</RkText>
 	            </View>
-	            <View style={{flex: 1}}>
-	              <Text style={{textAlign: 'right'}}>
+	            <View style={{flex: 1,paddingVertical:20}}>
+	              <RkText style={{textAlign: 'right'}}>
 	                {goals.length>0 && goals.map((goal)=>(goal.name + ", "))}
-	              </Text>
+	              </RkText>
 	            </View>
 	          </View>
 	          <View style={styles.statRow}>
 	            
-	            <View style={{flex: 1}}>
-	              <Text>Total Goals:</Text>
+	            <View style={{flex: 1,paddingVertical:20}}>
+	              <RkText rkType='rounded'>Total Goals:</RkText>
 	            </View>
-	            <View style={{flex: 1}}>
-	              <Text style={{textAlign: 'right'}}>{goals.length}</Text>
+	            <View style={{flex: 1,paddingVertical:20}}>
+	              <RkText style={{textAlign: 'right'}}>{goals.length}</RkText>
 	            </View>
 	            
 	          </View>
 
 	          <View style={styles.statRow}>
             
-	            <View style={{flex: 1}}>
-	              <Text>Completed Tasks:</Text>
+	            <View style={{flex: 1,paddingVertical:20}}>
+	              <RkText rkType='rounded'>Completed Tasks:</RkText>
 	            </View>
-	            <View style={{flex: 1}}>
-	              <Text style={{textAlign: 'right'}}>{this.state.tasksCompleted + "/" + this.state.taskCounter}</Text>
+	            <View style={{flex: 1,paddingVertical:20}}>
+	              <RkText style={{textAlign: 'right'}}>{this.state.tasksCompleted + "/" + this.state.taskCounter}</RkText>
 	            </View>
 	            
 	          </View>
-	          <View style={styles.statRow}>
+	          {/* <View style={styles.statRow}>
 	            
 	            <View style={{flex: 1}}>
-	              <Text>Participation:</Text>
+	              <RkText rkType='rounded'>Participation:</RkText>
 	            </View>
 	            <View style={{flex: 1}}>
-	              <Text style={{textAlign: 'right'}}>{this.state.comp}</Text>
+	              <RkText style={{textAlign: 'right'}}>{this.state.comp}</RkText>
 	            </View>
-	          </View>
+	          </View> */}
 	         </View>
 	    )
   	}
@@ -370,7 +370,7 @@ export class MyCactus extends Component {
 		);
 
 	    return (
-	      <View style={{flex: 1, flexDirection: 'column'}}>
+	      <ScrollView style={{flex: 1, flexDirection: 'column'}}>
 
 	      {/* Here goes the name of the cactus */}
 	      	<View style={styles.section, styles.cactusName}>
@@ -394,7 +394,7 @@ export class MyCactus extends Component {
 	      {/* Here goes the statistics section*/}
 	        	<CactusStats />
 	      	
-	      </View>
+	      </ScrollView>
 	    )
 	  }
 };
