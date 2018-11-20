@@ -18,7 +18,8 @@ import {
 import Ionicons from 'react-native-vector-icons/AntDesign';
 import PopupMenu from '../popup';
 import { CheckBox } from 'react-native-elements';
-import Icon from 'react-native-vector-icons/Ionicons';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import firebase from 'react-native-firebase';
 
 
 
@@ -61,6 +62,7 @@ export class PlanView extends RkComponent {
 
     componentDidMount () {
         this.keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', this._keyboardDidHide);
+        console.log(this.state.hasLiked)
     }
 
     componentWillUnmount () {
@@ -69,7 +71,7 @@ export class PlanView extends RkComponent {
   
     constructor(props) {
         super(props);
-        
+        this.ref= firebase.firestore().collection('updates')
         this.state = {
             likes: this.props.data.likes || PlanView.data.likes,
             comments: this.props.data.comments || PlanView.data.comments,
@@ -77,22 +79,32 @@ export class PlanView extends RkComponent {
             status: this.props.data.status || PlanView.data.status,
             tasks: this.props.data.tasks ||PlanView.data.tasks,
             goal_name: this.props.data.goal_name, 
-
+            hasLiked:this.props.data.hasLiked || false,
+            updateId:this.props.data.id,
+            updateUserId:this.props.data.user_id,
             edit_task_id:-1,
+            currentUserId:this.props.currentUserId,
         };
     }
 
     onLikeButtonPressed = () => {
+        if (this.state.hasLiked==true){
+            return null
+        }
+        else{
+        _likes=this.state.likes+1
         //!!!!! no good here
         // const defaultCount = PlanView.data.likes;
         this.setState({
             //????
-            likes: 
-            // this.state.likes === defaultCount ? 
-            this.state.likes + 1
+            likes: _likes,
+            hasLiked:true
+            // this.state.likes === defaultCount ?
             //  : defaultCount,
 
         });
+        this.ref.doc(this.state.updateId).update({likes:_likes,likedUsers:firebase.firestore.FieldValue.arrayUnion(this.state.currentUserId)})
+    }
     };
 
 
@@ -217,14 +229,17 @@ export class PlanView extends RkComponent {
                 {tasks.length>0 && tasks.map((item) => (
                 // <View  style={{flex:1, flexDirection:'row', paddingVertical: 10,paddingHorizontal: 10}}>
                 <View>
-                    <CheckBox checked={item.checked} title={item.task} containerStyle={{backgroundColor:'transparent',borderWidth: 0,flex:1}} />
+                    <CheckBox checked={item.checked} 
+                    checkedIcon='check'
+                    activeOpacity={1}
+                    title={item.task} containerStyle={{backgroundColor:'transparent',borderWidth: 0,flex:1}} />
                 </View>
                 ))}    
     
                 <View style={container}>
                     <View style={section}>
                         <RkButton rkType='clear' onPress={this.onLikeButtonPressed}>
-                            <RkText rkType='awesome primary' style={icon}><Ionicons name={'heart'}/></RkText>
+                            <RkText rkType='awesome primary' style={icon}><Icon name={this.hasLiked ==true ? 'heart': 'heart-o'}/></RkText>
                             <RkText rkType='primary primary4' style={label}>{likes}</RkText>
                         </RkButton>
                     </View>

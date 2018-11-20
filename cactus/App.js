@@ -23,7 +23,6 @@ import firebase from 'react-native-firebase';
 
 import Ionicons from 'react-native-vector-icons/AntDesign';
 import { createStackNavigator,createBottomTabNavigator} from 'react-navigation';
-import { data } from './data';
 import { bootstrap } from './config/bootstrap';
 
 bootstrap();
@@ -116,6 +115,7 @@ constructor() {
    * (logged out) or an Object (logged in)
    */
 componentDidMount() {
+  console.log('called mount')
   this.authSubscription = firebase.auth().onAuthStateChanged((user) => {
     this.setState({
       loading: false,
@@ -136,8 +136,8 @@ render() {
     if (this.state.loading) return null;
     // The user is an Object, so they're logged in
     if (this.state.user!=null) return <TabNav/>;
-    // The user is null, so they're logged out
     return <AuthStack/>;
+    // The user is null, so they're logged out
 }
 }
 

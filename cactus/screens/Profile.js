@@ -7,7 +7,6 @@ import firebase from 'react-native-firebase';
 import { CheckBox } from 'react-native-elements';
 
 
-import { data } from '../data/';
 import {
   RkText,
   RkButton, RkStyleSheet,RkPicker,
@@ -166,18 +165,10 @@ export class Profile extends Component {
       goal_name:goal.name,
       likes:0,
       timestamp:timestamp,
+      likedUsers:[],
+      tasks:[_task]
 
-      }).then((docRef)=>{
-
-          this.log_ref.doc(docRef.id).collection('tasks').add(
-            {
-              task:_task.task,
-              checked:_task.checked,
-            }
-          )
-        })
-        
-      .catch()
+      }).catch((error)=>{console.log(error)})
   }
   onTaskChecked(e,item, goal_id){
     const _goals = [...this.state.goals] 
@@ -226,7 +217,7 @@ export class Profile extends Component {
 	  <View style={[styles.userInfo, styles.bordered]}>
 	  
 		   <View style={[styles.header,styles.section]}>
-			<Avatar img={require('../data/img/avatars/Image9.png')} rkType='big' />
+			<Avatar img={require('../data/img/avatars/Image1.png')} rkType='big' />
 		   </View>
 		   <View style={styles.section, {flex: 1}}>
 		   <RkText rkType='header3'>{name}</RkText>

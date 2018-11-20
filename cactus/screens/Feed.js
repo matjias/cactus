@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { View, Text, Button,ScrollView ,Image} from 'react-native';
 import {RkCard,RkStyleSheet} from 'react-native-ui-kitten';
-import { data } from '../data/';
 import { PlanView } from '../components/planView';
 import firebase from 'react-native-firebase';
 
@@ -16,6 +15,9 @@ export class Feed extends Component {
   constructor(props) {
     super(props);
     this.ref=firebase.firestore().collection('updates')
+    console.log('called')
+
+    this.currentUser=firebase.auth().currentUser.uid
     this.state={
       datas:null
     }
@@ -54,26 +56,15 @@ export class Feed extends Component {
       var updates=[]
       snap1.forEach((doc) => {
       update={id:doc.id, user_id:doc.data().uid,username:doc.data().name, status:doc.data().action,
-        goal_name:doc.data().goal_name, likes:doc.data().likes}
+        goal_name:doc.data().goal_name, likes:doc.data().likes, hasLiked:doc.data().likedUsers.includes(this.currentUser),
+        tasks:doc.data().tasks}
       updates.push(update)      
       //retrieve tasks
         })
       return updates;
   
       }).then((updates)=>{
-        var final_updates=[];
-        updates.forEach((doc)=>{
-        this.ref.doc(doc.id).collection('tasks').get()
-        //retrieve tasks
-        .then((snap2)=>{
-          var tasks=[]
-          snap2.forEach((task)=>{
-            _task={task:task.data().task,checked:task.data().checked}
-            tasks.push(_task)
-          })
-          return tasks
-        }
-        ).then((tasks)=>{doc['tasks']=tasks; final_updates.push(doc);this.setState({datas:final_updates})})})
+        this.setState({datas:updates})
       }
       
        )
@@ -87,7 +78,7 @@ export class Feed extends Component {
 
         {datas!==null && datas.map((item) => (
           <View style={styles.root}>
-            <PlanView data = {item} />
+            <PlanView data = {item} currentUserId={this.currentUser}/>
             {/* <View style={styles.separator}/> */}
           </View>
         ))}

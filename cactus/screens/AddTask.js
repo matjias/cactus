@@ -52,6 +52,7 @@ export class AddTask extends Component {
 		
 	constructor(props) {
 		super(props);
+		
 		this.userId=firebase.auth().currentUser.uid,
 		this.ref = firebase.firestore().collection('users').doc(this.userId).collection('goals');
 		this.log_ref = firebase.firestore().collection('updates')
@@ -120,7 +121,9 @@ export class AddTask extends Component {
 			action:1, //1=set new goal, 2=set new task,3 completed task 
 			goal_name:goal,
 			timestamp:timestamp,
-			likes:0
+			likes:0,
+			likedUsers:[],
+			tasks:[]
 		}).catch()
 		//add tasks
 		}
@@ -156,18 +159,11 @@ export class AddTask extends Component {
 				action:2, //1=set new goal, 2=set new task(s),3 completed task 
 				goal_name:goal,
 				timestamp:timestamp,
-				likes:0
-				}).then((docRef)=>{
-					new_tasks.forEach((_task)=>{
-						this.log_ref.doc(docRef.id).collection('tasks').add(
-							{
-								task:_task.task,
-								checked:_task.checked,
-							}
-						)
-					})
-					
-				}).catch((error)=>{console.log(error)})
+				likes:0,
+				likedUsers:[],
+				tasks:new_tasks
+				})
+				.catch((error)=>{console.log(error)})
 		}
 
 		this.props.navigation.state.params.refresh();
