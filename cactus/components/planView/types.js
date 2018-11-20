@@ -7,7 +7,7 @@ export const PlanViewTypes = (theme) => ({
         flex: 1,
       },
       section: {
-        justifyContent: 'center',
+        // justifyContent: 'center',
         flexDirection: 'row',
         flex: 1,
       },
