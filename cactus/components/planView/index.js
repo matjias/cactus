@@ -191,6 +191,27 @@ export class PlanView extends RkComponent {
         }
     }
 
+    onPostReport(){
+        Alert.alert(
+            'Lækker',
+            'Thank you for the contribution!',
+        )
+    }
+
+    onPopupReport (eventName, index) {
+        if (eventName !== 'itemSelected') return
+        //const _edit_id=id
+        if (index === 0) {
+          Alert.alert("Dear Cactus",
+            'Are you sure you want to report this post?',
+            [
+                {text: 'Cancel'},
+                {text: 'Yes, report', onPress:() => this.onPostReport()},
+            ],
+            {cancelable: false})
+        }
+    }
+
     render() {
         const {
             container, section, icon, label,task,
@@ -229,9 +250,15 @@ export class PlanView extends RkComponent {
                 <View>
                     <RkText rkType='primary hintColor'>{status}</RkText>
                 </View>
-                <View>
-                    <RkText rkType='primary'>{'Goal Name: '+goal_name}</RkText>
+                <View style = {{flexDirection: 'row'}}>
+                    <View style = {{flex: 1}}>
+                        <RkText rkType='primary'>{'Goal Name: '+goal_name}</RkText>
+                    </View>
+                    <View style={{justifyContent: 'center'}}>
+                        <PopupMenu actions={['Report']}  onPress={(e,index)=>this.onPopupReport(e,index)} />
+                    </View>
                 </View>
+    		
                 {tasks.length>0 && tasks.map((item) => (
                 // <View  style={{flex:1, flexDirection:'row', paddingVertical: 10,paddingHorizontal: 10}}>
                 <View>
