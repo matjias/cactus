@@ -1,6 +1,6 @@
 # Cactus
 
-In an education, daily motivation can be a big problem for students to reach a desired goal. We have implemented a prototype for micro-goal setting. The user can set small goals, which will automatically be shared on a public feed. Everyone can then use this to provide feedback for others, or gain inspiration from other’s goals. To keep users motivated, they will have to take care of their own little Cactus, which will only grow upon completing tasks, and participating in the public feed. 
+We have implemented a prototype for micro-goal setting. The user can set small goals, which will automatically be shared on a public feed. Everyone can then use this to provide feedback for others, or gain inspiration from other’s goals. To keep users motivated, they will have to take care of their own little Cactus, which will only grow upon completing tasks, and participating in the public feed. 
 
 ## Installation
 The app can be installed from the Cactus.apk in the root folder.
