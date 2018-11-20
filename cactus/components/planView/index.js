@@ -196,7 +196,8 @@ export class PlanView extends RkComponent {
             container, section, icon, label,task,
         } = this.defineStyles();
 
-        const likes = this.state.likes + (this.props.showLabel ? ' Likes' : '');
+        var likes = this.state.likes ;
+        // const likes = this.state.likes + (this.props.showLabel ? ' Likes' : '');
         // const comments = this.state.comments + (this.props.showLabel ? ' Comments' : '');
         const comments = this.state.comments;
         const tasks=this.state.tasks
@@ -212,6 +213,11 @@ export class PlanView extends RkComponent {
             status= 'just completed a task !';
         }
 
+        if(likes>=1){
+            likes = likes + ' likes';
+        }else{
+            likes = likes + ' like';
+        }
         
         const edit_task_id=this.state.edit_task_id
 
@@ -224,7 +230,7 @@ export class PlanView extends RkComponent {
                     <RkText rkType='primary hintColor'>{status}</RkText>
                 </View>
                 <View>
-                    <RkText rkType='primary'>{goal_name}</RkText>
+                    <RkText rkType='primary'>{'Goal Name: '+goal_name}</RkText>
                 </View>
                 {tasks.length>0 && tasks.map((item) => (
                 // <View  style={{flex:1, flexDirection:'row', paddingVertical: 10,paddingHorizontal: 10}}>
@@ -240,12 +246,15 @@ export class PlanView extends RkComponent {
 
                 <View style={{paddingLeft: 10}}>
                     <RkButton rkType='clear' onPress={this.onLikeButtonPressed}>
-                        <RkText rkType='primary' style={icon}><Ionicons name={'heart'}/></RkText>
-                        <RkText rkType='primary' style={label}>{' '+likes}</RkText>
+                        <RkText rkType='primary6'> </RkText>
+                        <RkText rkType='primary' ><Ionicons style={{fontSize:27}} name={'heart'}/></RkText>
+                     
+                        <RkText rkType='primary' style={label}>{'  '+likes}</RkText>
                     </RkButton>
                 </View>
 
                 <View>
+                    <RkText >Comments: </RkText>
                     {comments.map((item) => (
                     // <View  style={{flex:1, flexDirection:'row', paddingVertical: 10,paddingHorizontal: 10}}>
                     <View>

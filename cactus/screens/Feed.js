@@ -26,26 +26,6 @@ export class Feed extends Component {
     //put the data into   varibale datats    so datas = [{...},{...},{...}]
     //give the each element inside the datas to PlanView class in this way:
     
-    // {datas.map((item) => (
-    //   <View style={styles.root}>
-    //     <PlanView data = {item} />
-    //     {/* <View style={styles.separator}/> */}
-    //   </View>
-    // ))}
-
-
-    //TRY:
-    // this.ref=firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid)
-    // this.ref.get().then((doc)=>{if (doc.exists) 
-    //           {var user=doc.data()
-    //           //retrieve goals
-    //           this.state = {
-    //             name:user.name,
-    //             aboutMe:user.aboutMe}
-    //           }}).catch()   
-    // this.state = {
-    //     datas:Feed.datas,
-    // };
   }
 
   componentDidMount(){
