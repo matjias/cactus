@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { View, Text, Button, ScrollView, ProgressBarAndroid, Image, AppRegistry } from 'react-native';
 
-import { data } from '../data/';
 import {
   RkText,
   RkButton, RkStyleSheet,RkPicker,
@@ -30,19 +29,19 @@ RkTheme.setType('RkText','cactusName',{
 /* Variables */
 var completedGoals = 0;
 
-var ref = firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid);
+//var ref = firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid);
 
-ref.get().then( doc => { if(doc.exists){
+/* ref.get().then( doc => { if(doc.exists){
 	  		completedGoals = doc.data().progress
 	  	}
-	  }).catch();
+	  }).catch(); */
 
 var initialName = ''
-
+/* 
 ref.get().then( doc => { if(doc.exists){
 	  		initialName = doc.data().cactusName
 	  	}
-	  }).catch();
+	  }).catch(); */
 
 /* Objects for the Cactus Screen */
 class CactusName extends Component {
@@ -102,7 +101,8 @@ class CactusName extends Component {
 class Cactus extends Component {
 
 	constructor(props) {
-	  super(props);
+		super(props);
+		
 	  this.ref = firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid);
 	  this.state = {
 	  	progress: completedGoals,
@@ -252,7 +252,7 @@ export class MyCactus extends Component {
 
 	onFocus(){
 		this.setState({isFocused: true})
-		ref.get().then( doc => { if(doc.exists){
+		this.ref.get().then( doc => { if(doc.exists){
 	  		completedGoals = doc.data().progress
 	  	}
 	  }).catch();
@@ -260,7 +260,7 @@ export class MyCactus extends Component {
 
 	noFocus(){
 		this.setState({isFocused: false})	
-		ref.get().then( doc => { if(doc.exists){
+		this.ref.get().then( doc => { if(doc.exists){
 	  		completedGoals = doc.data().progress
 	  	}
 	  }).catch();
@@ -396,4 +396,6 @@ const styles = RkStyleSheet.create(theme => ({
   },
 
 }));
+
+
 
