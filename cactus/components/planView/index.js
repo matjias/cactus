@@ -265,8 +265,9 @@ export class PlanView extends RkComponent {
                     ))}
    
                     <View>
+                        <Ionicons style={{fontSize:27, flex:1}} name={'heart'}/>
                         <RkTextInput 
-                        label={<Ionicons name={'thumbs-up'}/>} 
+                        // label={<Ionicons name={'thumbs-up'}/>} 
                         rkType='rounded' 
                         id = 'commentLine'
                         multiline = {false} 

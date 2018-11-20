@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { View, Text, Button, ScrollView, ProgressBarAndroid, Image, AppRegistry } from 'react-native';
 //import { CactusStats } from '../components/cacStats.js';
 
-import { data } from '../data/';
 import {
   RkText,
   RkButton, RkStyleSheet,RkPicker,
