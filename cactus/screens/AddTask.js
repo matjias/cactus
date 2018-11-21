@@ -97,60 +97,101 @@ export class AddTask extends Component {
 		if (res==false){
 			return null;
 		}
-	
-		goal_id=this.state.goal.id.toString();
-		goal=this.state.goal.name
+
+		goal_id=this.state.goal.id;
+		goal=this.state.goal.name.trim()
 		new_tasks=[]
 		console.log(goal_id,goal)
 
 		timestamp=Date.now()
-		console.log(timestamp)
+		tasks=this.state.tasks
+		console.log(timestamp,tasks.length)
 		//return null
 		//add goal to collection goals
-		this.ref.doc(goal_id).set({
-			id:goal_id,
+		if (this.state.action=='update'){
+			//update
+		this.ref.doc(goal_id).update({
+			//id:goal_id,
 			name:goal,
-			delete:false
-			//add upldate
+			delete:false,
+			timestamp_updated:timestamp
+			//add update
 		}).catch()
-		if (action!=='update'){
-		this.log_ref.add({
-			uid:this.userId,
-			name:this.state.username,
-			action:1, //1=set new goal, 2=set new task,3 completed task 
-			goal_name:goal,
-			timestamp:timestamp,
-			likes:0,
-			likedUsers:[],
-			tasks:[]
-		}).catch()
-		//add tasks
-		}
-		tasks=this.state.tasks
+
 		for (i=0; i<tasks.length;i++){
 			
 			t=tasks[i]
-			task_id=t.id.toString()
+			task_id=t.id
 			task_name=t.task.trim()
 			_delete=t.delete
 			if (task_name==''){
 				continue;
 			}
 			isChecked=t.checked
-			//add
-			console.log(task_id,task_name,isChecked)
-		  this.ref.doc(goal_id).collection('tasks').doc(task_id).set({
-				id:task_id,
-				task:task_name,
-				checked:isChecked,
-				delete:_delete
-			})
-			
-			
-			if (!(t.id  in this.state.task_ids)){
+			//add 
+			if (this.state.task_ids.includes(task_id)){
+				this.ref.doc(goal_id).collection('tasks').doc(task_id).update({
+					task:task_name,
+					checked:isChecked,
+					delete:_delete
+				}).catch()
+			}
+		  	else {
+				this.ref.doc(goal_id).collection('tasks').add({
+					task:task_name,
+					checked:isChecked,
+					delete:_delete,
+					timestamp:timestamp
+				}).catch()
 				new_tasks.push(t)
-				}	
+			  }
+			}
+
 		}
+		else{
+			//add new goal
+			this.ref.add({
+				
+				name:goal,
+				delete:false,
+				timestamp_created:timestamp,
+				timestamp_updated:timestamp
+			}).then((docRef)=>{
+				for (i=0; i<tasks.length;i++){
+			
+					t=tasks[i]
+					task_name=t.task.trim()
+					_delete=t.delete
+					if (task_name==''){
+						continue;
+					}
+					isChecked=t.checked
+					//add 
+				  this.ref.doc(docRef.id).collection('tasks').add({
+						task:task_name,
+						checked:isChecked,
+						delete:_delete,
+						timestamp:timestamp
+					}).catch((error)=>{console.log(error)})
+					new_tasks.push(t)
+				}
+			}).catch()
+			//add upldate
+			this.log_ref.add({
+				uid:this.userId,
+				name:this.state.username,
+				action:1, //1=set new goal, 2=set new task,3 completed task 
+				goal_name:goal,
+				timestamp:timestamp,
+				likes:0,
+				likedUsers:[],
+				tasks:[]
+			}).catch()
+
+			
+
+		}
+		//if new tasks added update feed log
 		if (new_tasks.length>0){
 			this.log_ref.add({
 				uid:this.userId,
@@ -182,6 +223,9 @@ export class AddTask extends Component {
 		_arr=[];
 		
 		for(var i=0;i<arr.length;i++){
+			if (isNaN(arr[i].id) ){
+				continue
+			}
 			_arr.push(arr[i].id);
 		}
 		console.log(_arr)
@@ -243,7 +287,8 @@ export class AddTask extends Component {
 		const _tasks = [...this.state.tasks]
 		index=this.findObjectByKey(_tasks,'id',id)
 		console.log(index,this.state.action)
-		if (this.state.action=='update' && this.state.task_ids.length!=0 && _tasks[index].id in this.state.task_ids){
+	
+		if (this.state.action=='update' && this.state.task_ids.length!=0 && this.state.task_ids.includes(_tasks[index].id )){
 		
 			_tasks[index].delete=true
 			

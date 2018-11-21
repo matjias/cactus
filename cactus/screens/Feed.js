@@ -3,19 +3,32 @@ import { View, Text, Button,ScrollView ,Image} from 'react-native';
 import {RkCard,RkStyleSheet} from 'react-native-ui-kitten';
 import { PlanView } from '../components/planView';
 import firebase from 'react-native-firebase';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 export class Feed extends Component {
 
-  static navigationOptions = {
-    title: 'Feed', //Cactus?? kinda misleading 
-  };
-
+  static navigationOptions = ({ navigation }) => {
+		const { params = {} } = navigation.state;
+    return {
+      title: 'Feed', //Cactus?? kinda misleading 
+        //headerTitleStyle :{color:'#fff'},
+        //headerStyle: {backgroundColor:'#3c3c3c'},
+		//headerRight: <Icon style={{ marginLeft:15,color:'green' }} name={'check'} size={25} onPress={() => params.handleSave()} />
+		//headerRight: <TouchableOpacity style={{ marginRight:20}} onPress={() => params.handleRefresh()}>
+			//	<Icon size={24} style={{color:'green'}} name='refresh'/>
+				//	</TouchableOpacity>
+    };
+	};
   
-  
+  componentDidMount(){
+   // this.props.navigation.setParams({ handleRefresh:  this.retrieveData});
+     this.retrieveData()
+    }
   constructor(props) {
     super(props);
     this.ref=firebase.firestore().collection('updates')
     console.log('called')
+    //this.retrieveData=this.retrieveData.bind(this);
 
     this.currentUser=firebase.auth().currentUser.uid
     this.state={
@@ -28,9 +41,6 @@ export class Feed extends Component {
     
   }
 
-  componentDidMount(){
-   this.retrieveData()
-  }
   retrieveData(){
     this.ref.orderBy('timestamp','desc').get().then((snap1)=>{
       var updates=[]

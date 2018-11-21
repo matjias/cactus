@@ -48,6 +48,7 @@ export class SignUp extends React.Component {
   }
 
   createUser(email,password, name,aboutMe){
+    timestamp=Date.now()
     firebase.auth().createUserWithEmailAndPassword(email, password)
     .then((credentials) => {
       firebase.firestore().collection('users').doc(credentials.user.uid).set({
@@ -56,6 +57,7 @@ export class SignUp extends React.Component {
         aboutMe:aboutMe,
         cactusName:'Hello bebe',
         progress:0,
+        timestamp:timestamp
         
     })})
     .catch((error) => {

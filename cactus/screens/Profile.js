@@ -24,7 +24,7 @@ export class Profile extends Component {
         //headerStyle: {backgroundColor:'#3c3c3c'},
 		//headerRight: <Icon style={{ marginLeft:15,color:'green' }} name={'check'} size={25} onPress={() => params.handleSave()} />
 		  headerRight: <View style={{justifyContent: 'center',marginRight:10}}>
-      <PopupMenu actions={['Sign out']} onPress={(e,index)=>params.onPopupEvent(e,index)} />
+      <PopupMenu actions={['Edit profile','Sign out']} onPress={(e,index)=>params.onPopupEvent(e,index)} />
     </View>
     };
 	};
@@ -41,37 +41,47 @@ export class Profile extends Component {
       goals:[],
     }
     this.userId=firebase.auth().currentUser.uid
-    this.refreshFunction=this.refreshFunction.bind(this)
+    this.retrieveProfileInfo=this.retrieveProfileInfo.bind(this)
+    //this.retrieveData=this.retrieveData.bind(this)
+
     this.ref=firebase.firestore().collection('users').doc(this.userId)
    
     this.onPopupEvent=this.onPopupEvent.bind(this)
 
-    //retrieve profile info
-    this.ref.get().then((doc)=>{if (doc.exists) 
-              {var user=doc.data()
-              //retrieve goals
-              this.setState({name:user.name,aboutMe:user.aboutMe,progress:user.progress})
-              }}).catch()
-
     this.log_ref = firebase.firestore().collection('updates')
                 
+  }
+  retrieveProfileInfo(){
+ //retrieve profile info
+    this.ref.get().then((doc)=>{if (doc.exists) 
+    {var user=doc.data()
+    //retrieve goals
+    this.setState({name:user.name,aboutMe:user.aboutMe,progress:user.progress})
+    }}).catch()
   }
   refreshFunction(){
     this.retrieveData()
   }
+
  
   retrieveData(){
-    this.ref.collection('goals').where('delete','==',false).get().then((snap1)=>{
+    this.ref.collection('goals').where('delete','==',false).orderBy('timestamp_updated','desc').get().then((snap1)=>{
+      
       var goals=[]
       snap1.forEach((goal) => {
-      _goal={id:goal.data().id, name:goal.data().name,delete:goal.data().delete}
+      _goal={id:goal.id, name:goal.data().name,delete:goal.data().delete,tasks:[]}
       goals.push(_goal)      
       console.log(goals)
       //retrieve tasks
         })
+    
       return goals;
-  
+      
       }).then((goals)=>{
+        if(goals.length==0){
+          this.setState({goals:[]})
+          return;
+        }
         var new_goals=[];
         goals.forEach((goal)=>{
         this.ref.collection('goals').doc(goal.id).collection('tasks').where('delete','==',false).get()
@@ -79,12 +89,13 @@ export class Profile extends Component {
         .then((snap2)=>{
           var tasks=[]
           snap2.forEach((task)=>{
-            _task={id:parseInt(task.data().id),task:task.data().task,checked:task.data().checked,delete:task.data().delete}
+            _task={id:task.id,task:task.data().task,checked:task.data().checked,delete:task.data().delete}
             tasks.push(_task)
           })
           return tasks
         }
-        ).then((tasks)=>{goal['tasks']=tasks; new_goals.push(goal);this.setState({goals:new_goals});console.log(new_goals)})})
+        ).then((tasks)=>{goal['tasks']=tasks;this.setState({goals:goals});console.log(new_goals)})})
+      
       }
       
        )
@@ -95,12 +106,16 @@ export class Profile extends Component {
     //var loading=true;
     this.props.navigation.setParams({ onPopupEvent:  this.onPopupEvent });
     this.retrieveData()
+    this.retrieveProfileInfo()
     //loading=false;
 	}
   
   onPopupEvent (eventName, index) {
     if (eventName !== 'itemSelected') return
-    if (index === 0) {
+    if (index === 0){
+      this.props.navigation.navigate('EditProfile',{refresh:()=>this.retrieveProfileInfo()})
+    }
+    else if (index === 1) {
       //this.state.navigation.navigate('EditProfile')
       firebase.auth().signOut().catch((error) => {
         const { code, message } = error;
@@ -119,14 +134,14 @@ export class Profile extends Component {
 
    saveChanges(goal_id,task_id){
     this.ref.collection('goals').doc(goal_id).collection('tasks')
-    .doc(task_id.toString()).update({ checked: true}).catch((error)=>console.log(error))
+    .doc(task_id).update({ checked: true}).catch((error)=>console.log(error))
     this.ref.update({progress:this.state.progress}).catch((error)=>console.log(error))
   }
 
   onGoalDelete(goal_id){
     this.ref.collection('goals').doc(goal_id).update({delete:true}).then(
       this.retrieveData()
-    )
+    ).catch((error)=>{console.log(error)})
 
   }
   
@@ -199,7 +214,7 @@ export class Profile extends Component {
         last_id=this.getPrevId(this.state.goals)
         id=last_id+1
       }
-      this.props.navigation.navigate('AddTask', {goal:{id:id,name:''},
+      this.props.navigation.navigate('AddTask', {goal:{id:1,name:''},
                                                 tasks:[{id:1, task:'',checked:false, delete:false}],
                                                 uName:this.state.name,
                                                 refresh: ()=>this.refreshFunction()})
@@ -214,7 +229,7 @@ export class Profile extends Component {
 	  <View style={styles.userInfo}>
 	  
 		   <View style={[styles.header,styles.section]}>
-			<Avatar img={require('../data/img/avatars/Image1.png')} rkType='big' />
+			<Avatar img={require('../data/img/avatars/Image1.jpg')} rkType='big' />
 		   </View>
 		   <View style={styles.section, {flex: 1}}>
 		   <RkText rkType='header3'>{name}</RkText>
@@ -225,7 +240,7 @@ export class Profile extends Component {
 	  
       <View style={styles.buttons}>
         <RkButton style={[styles.button,styles.bordered]}     contentStyle={{color: 'green', marginVertical:15}} rkType='clear link' 
-        onPress={() => this.addNewGoal()} >ADD NEW GOAL</RkButton>
+        onPress={() => this.addNewGoal()} >ADD NEW GOAL!</RkButton>
       </View>
 	  
 	  <View style={styles.goalContainer}>
