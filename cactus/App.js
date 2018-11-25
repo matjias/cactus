@@ -16,6 +16,11 @@ import EditProfile from './screens/EditProfile';
 import AddTask from './screens/AddTask';
 import SignUp from './screens/signUp';
 import Login from './screens/login';
+import Notifications from './screens/Notifications';
+import Comments from './screens/Comments';
+import ProfileGuest from './screens/Profile_guest';
+import Update from './screens/Update';
+
 import firebase from 'react-native-firebase';
 
 
@@ -43,6 +48,11 @@ const ProfileStack = createStackNavigator({
   Profile: Profile,
   EditProfile:EditProfile,
   AddTask: AddTask,
+  Notifications: Notifications,
+  ProfileGuest:ProfileGuest,
+  Update,
+  Comments:Comments
+
   
 });
 
@@ -60,9 +70,22 @@ ProfileStack.navigationOptions = ({ navigation }) => {
 
 const FeedStack = createStackNavigator({
   Feed: Feed,
+  Comments:Comments,
+  ProfileGuest:ProfileGuest,
+
   
 });
 
+FeedStack.navigationOptions = ({ navigation }) => {
+  let tabBarVisible = true;
+  if (navigation.state.index > 0) {
+    tabBarVisible = false;
+  }
+
+  return {
+    tabBarVisible,
+  };
+};
 
 
 const TabNav= createBottomTabNavigator(

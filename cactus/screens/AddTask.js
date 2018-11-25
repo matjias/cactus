@@ -39,13 +39,41 @@ export class AddTask extends Component {
     };
 	};
 
+
+	onFocus(){
+        db = firebase.firestore().collection('activity_log');
+        db.add(
+          {
+            user_id:firebase.auth().currentUser.uid,
+            action:'add goal',
+            timestamp:Date.now()
+          }
+        ).catch()
+        }
+     
+    componentWillUnmount(){
+		this.didFocusSubscription.remove()
+	}
+    
+    
+        
+        
+       
+
 	componentDidMount() {
+		this.didFocusSubscription = this.props.navigation.addListener(
+            'didFocus',
+            payload => {
+              this.onFocus();
+        });
 		this.props.navigation.setParams({ handleSave:  this.saveChanges });
 		goal=this.props.navigation.getParam('goal',AddTask.data.goal)
 		tasks=this.props.navigation.getParam('tasks',AddTask.data.tasks)
 		action=this.props.navigation.getParam('action',this.state.action)
 		task_ids=this.props.navigation.getParam('task_ids',this.state.task_ids)
 		username=this.props.navigation.getParam('uName','undefined')
+		this.profileURL=this.props.navigation.getParam('profileURL','undefined')
+
 		console.log('called mount')
 		this.setState({goal:goal,tasks:tasks,action:action,task_ids:task_ids,username:username})
 		}
@@ -53,6 +81,7 @@ export class AddTask extends Component {
 	constructor(props) {
 		super(props);
 		this.userId=firebase.auth().currentUser.uid,
+		this.profileURL=''
 		this.ref = firebase.firestore().collection('users').doc(this.userId).collection('goals');
 		this.log_ref = firebase.firestore().collection('updates')
 		
@@ -92,6 +121,25 @@ export class AddTask extends Component {
 		}
 		return true;
 	}
+
+	updateFeedWithTasks(new_tasks,goal, timestamp){
+		if (new_tasks.length>0){
+			this.log_ref.add({
+				uid:this.userId,
+				name:this.state.username,
+				profileURL:this.profileURL,
+				action:2, //1=set new goal, 2=set new task(s),3 completed task 
+				goal_name:goal,
+				timestamp:timestamp,
+				comments_number:0,
+				likes:0,
+				likedUsers:[],
+				tasks:new_tasks
+				})
+				.catch((error)=>{console.log(error)})
+		}
+	}
+
 	saveChanges() {
 		res=this.validateInput()
 		if (res==false){
@@ -99,11 +147,11 @@ export class AddTask extends Component {
 		}
 
 		goal_id=this.state.goal.id;
-		goal=this.state.goal.name.trim()
-		new_tasks=[]
+		var goal=this.state.goal.name.trim()
+		var new_tasks=[]
 		console.log(goal_id,goal)
 
-		timestamp=Date.now()
+		var timestamp=Date.now()
 		tasks=this.state.tasks
 		console.log(timestamp,tasks.length)
 		//return null
@@ -141,11 +189,19 @@ export class AddTask extends Component {
 					task:task_name,
 					checked:isChecked,
 					delete:_delete,
-					timestamp:timestamp
+					timestamp:Date.now(),
+					timestamp_completed:0
 				}).catch()
 				new_tasks.push(t)
 			  }
 			}
+
+			if(new_tasks.length>0) 
+					//if new tasks added update feed log
+
+				{
+					this.updateFeedWithTasks(new_tasks,goal,Date.now())
+				}
 
 		}
 		else{
@@ -171,40 +227,41 @@ export class AddTask extends Component {
 						task:task_name,
 						checked:isChecked,
 						delete:_delete,
-						timestamp:timestamp
+						timestamp:Date.now(),
+						timestamp_completed:0
+
 					}).catch((error)=>{console.log(error)})
 					new_tasks.push(t)
 				}
+			}).then(()=>{
+				//update feed with new tasks
+				if(new_tasks.length>0) 
+				{
+					//if new tasks added update feed log
+
+					this.updateFeedWithTasks(new_tasks,goal,Date.now())
+				}
 			}).catch()
-			//add upldate
+			//add upldate goal only if no new tasks added
+			if (new_tasks.length==0){
 			this.log_ref.add({
 				uid:this.userId,
 				name:this.state.username,
+				profileURL:this.profileURL,
+
 				action:1, //1=set new goal, 2=set new task,3 completed task 
 				goal_name:goal,
 				timestamp:timestamp,
 				likes:0,
+				comments_number:0,
 				likedUsers:[],
 				tasks:[]
 			}).catch()
-
+		}
 			
 
 		}
-		//if new tasks added update feed log
-		if (new_tasks.length>0){
-			this.log_ref.add({
-				uid:this.userId,
-				name:this.state.username,
-				action:2, //1=set new goal, 2=set new task(s),3 completed task 
-				goal_name:goal,
-				timestamp:timestamp,
-				likes:0,
-				likedUsers:[],
-				tasks:new_tasks
-				})
-				.catch((error)=>{console.log(error)})
-		}
+		
 
 		this.props.navigation.state.params.refresh();
 		console.log('saved')

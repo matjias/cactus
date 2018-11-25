@@ -3,6 +3,7 @@ import {
   View,
   Image,
   Keyboard,
+  ActivityIndicator,
 } from 'react-native';
 import {
   RkButton,
@@ -24,7 +25,8 @@ export class Login extends React.Component {
       emailError: null,
       password: '',
       passwordError: null,
-      login:false,
+      isLoading:false,
+      loginError:null,
     }
   }
   
@@ -36,8 +38,11 @@ export class Login extends React.Component {
     return err;
   }
   onLoginButtonPressed = () => {
-    if  (this.state.emailError!=null || this.state.passwordError!=null){
-      return null;
+
+    if  (this._validate('email',this.state.email)!=null ||this._validate('password',this.state.password)!=null){
+
+      return this.setState({emailError:this._validate('email',this.state.email),passwordError:this._validate('password',this.state.password) })
+
     }
     else if (this.state.email==''){
       return this.setState({emailError:this._validate('email',this.state.email)})
@@ -45,7 +50,8 @@ export class Login extends React.Component {
     else if (this.state.password==''){
       return this.setState({passwordError:this._validate('password',this.state.password)});
     }
-    this.setState({login:true})
+    this.setState({isLoading:true,loginError:null})
+
     firebase.auth().signInWithEmailAndPassword(this.state.email, this.state.password)
     .then((user) => {
       // If you need to do anything with the user, do it here
@@ -53,9 +59,16 @@ export class Login extends React.Component {
       // `onAuthStateChanged` listener we set up in App.js earlier
     })
     .catch((error) => {
-      const { code, message } = error;
+      var { code, message } = error;
       console.log(code,message)
-      this.setState({login:false})
+      if (code=='auth/unknown')       
+      {message='Please check you Internet connection'   }
+     else if(code=='auth/user-not-found')
+     {
+       message="Incorrect email or password"
+     }
+      this.setState({isLoading:false, loginError:message})
+
 
       // For details of error codes, see the docs
       // The message contains the default Firebase string
@@ -71,6 +84,16 @@ render(){
     const emailError=this.state.emailError
     const passwordError=this.state.passwordError
     const login=this.state.login
+    const isLoading=this.state.isLoading
+    const loginError=this.state.loginError
+
+  if (isLoading){
+      return (
+        <View style={[styles.a_container, styles.a_horizontal]}>
+         
+          <ActivityIndicator size="large" color="#00ff00" />
+        </View>)
+      }
   return (
     <RkAvoidKeyboard
       style={styles.screen}
@@ -79,13 +102,15 @@ render(){
      
       <View style={styles.content}>
         <View>
-          <RkTextInput rkType='bordered' placeholder='Email' onChangeText={(text)=>this.setState({email:text})}
+          <RkTextInput rkType='bordered' keyboardType='email-address' placeholder='Email' onChangeText={(text)=>this.setState({email:text})}
+          autoCapitalize='none'
           style={{marginVertical:0,}}
           inputStyle={styles.input}
            onBlur={()=>this.setState({emailError:this._validate('email',this.state.email)})}/>
           {emailError !== null ? <RkText style={styles.error}>{emailError}</RkText> : null}
 
           <RkTextInput rkType='bordered' placeholder='Password' secureTextEntry   inputStyle={styles.input}
+          autoCapitalize='none'
           style={{marginBottom:0,}}
           onBlur={()=>this.setState({passwordError:this._validate('password',this.state.password)})}
           onChangeText={(text)=>this.setState({password:text})}/>
@@ -101,6 +126,7 @@ render(){
               <RkText rkType='header6' style={{fontWeight:'bold'}}>Sign up now</RkText>
             </RkButton>
           </View>
+          {loginError !== null ? <RkText style={{alignSelf:'center',color:'red',fontSize:11,}}>{loginError}</RkText> : null}
         </View>
       </View>
     </RkAvoidKeyboard>
@@ -109,6 +135,20 @@ render(){
 }
 export default Login;
 const styles = RkStyleSheet.create(theme => ({
+  a_container: {
+    flex: 1,
+    justifyContent: 'center',
+
+    backgroundColor: theme.colors.screen.base,
+
+  },
+  a_horizontal: {
+    backgroundColor: theme.colors.screen.base,
+
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    padding: 10
+  },
   screen: {
     padding: scaleVertical(16),
     flex: 1,
@@ -159,5 +199,7 @@ const styles = RkStyleSheet.create(theme => ({
   button: {
     borderColor: theme.colors.border.solid,
   },
-  footer: {},
+  footer: {
+    alignSelf:'center'
+  },
 }));

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, Button,ScrollView ,Image} from 'react-native';
+import { View, Text, FlatList,ScrollView ,Image} from 'react-native';
 import {RkCard,RkStyleSheet} from 'react-native-ui-kitten';
 import { PlanView } from '../components/planView';
 import firebase from 'react-native-firebase';
@@ -10,29 +10,57 @@ export class Feed extends Component {
   static navigationOptions = ({ navigation }) => {
 		const { params = {} } = navigation.state;
     return {
-      title: 'Feed', //Cactus?? kinda misleading 
-        //headerTitleStyle :{color:'#fff'},
-        //headerStyle: {backgroundColor:'#3c3c3c'},
-		//headerRight: <Icon style={{ marginLeft:15,color:'green' }} name={'check'} size={25} onPress={() => params.handleSave()} />
-		//headerRight: <TouchableOpacity style={{ marginRight:20}} onPress={() => params.handleRefresh()}>
-			//	<Icon size={24} style={{color:'green'}} name='refresh'/>
-				//	</TouchableOpacity>
+      title: 'Feed'.toUpperCase(), //Cactus?? kinda misleading 
     };
-	};
+  };
+  
+
+  onFocus(){
+    db = firebase.firestore().collection('activity_log');
+    db.add(
+      {
+        user_id:firebase.auth().currentUser.uid,
+        action:'feed',
+        timestamp:Date.now()
+      }
+    ).catch()
+	}
+ 
+  componentWillUnmount(){
+    this.didFocusSubscription.remove()
+  }
+  
+  
   
   componentDidMount(){
+    this.didFocusSubscription = this.props.navigation.addListener(
+		  'didFocus',
+		  payload => {
+		    this.onFocus();
+		  });
    // this.props.navigation.setParams({ handleRefresh:  this.retrieveData});
-     this.retrieveData()
+   this.currentUserId=firebase.auth().currentUser.uid
+   firebase.firestore().collection('users').doc(this.currentUserId).
+    get().then((doc)=>{
+      this.currentUserName= doc.data().name
+      this.currentUserURL= doc.data().profileURL
+
+    }).then(()=>{
+      
+      this.retrieveData(10)}).catch((error)=>{console.log(error)})
+    
     }
   constructor(props) {
     super(props);
     this.ref=firebase.firestore().collection('updates')
-    console.log('called')
     //this.retrieveData=this.retrieveData.bind(this);
-
-    this.currentUser=firebase.auth().currentUser.uid
+    this.currentUserId=''
+    this.currentUserName=''
+    this.currentUserURL=''
+    this.lastVisible=null
     this.state={
-      datas:null
+      isLoading:false,
+      datas:[],
     }
     //AIM: 
     //get goal update data from firebase ...
@@ -41,12 +69,47 @@ export class Feed extends Component {
     
   }
 
-  retrieveData(){
-    this.ref.orderBy('timestamp','desc').get().then((snap1)=>{
+ 
+  getExtraData(batchLimit){
+    this.setState({isLoading:true})
+    db=this.ref.orderBy('timestamp','desc').startAfter(this.lastVisible).limit(batchLimit);
+    db.get().then((snap1)=>{
+      // Get the last visible document
+     this.lastVisible = snap1.docs[snap1.docs.length-1];
+     var updates=[]
+     snap1.forEach((doc) => {
+     update={id:doc.id, user_id:doc.data().uid,username:doc.data().name, status:doc.data().action, profileURL:doc.data().profileURL ==null ? 3:doc.data().profileURL,
+       goal_name:doc.data().goal_name, comments_number:doc.data().comments_number,likes:doc.data().likes,
+       hasLiked:doc.data().likedUsers.includes(this.currentUserId),
+       tasks:doc.data().tasks}
+     updates.push(update)      
+     //retrieve tasks
+       })
+     return updates;
+ 
+     }).then((updates)=>{
+       
+       //this.setState({datas:updates})
+       datas=[...this.state.datas]
+    
+      this.setState({isLoading:false, datas:datas.concat(updates)})
+
+       })
+      .catch((error)=>{console.log(error)})  
+  }
+  retrieveData(batchLimit){
+    this.lastVisible=null
+    this.setState({isLoading:true})
+    db=this.ref.orderBy('timestamp','desc').limit(batchLimit)
+    
+    db.get().then((snap1)=>{
+       // Get the last visible document
+      this.lastVisible = snap1.docs[snap1.docs.length-1];
       var updates=[]
       snap1.forEach((doc) => {
-      update={id:doc.id, user_id:doc.data().uid,username:doc.data().name, status:doc.data().action,
-        goal_name:doc.data().goal_name, likes:doc.data().likes, hasLiked:doc.data().likedUsers.includes(this.currentUser),
+      update={id:doc.id, user_id:doc.data().uid,username:doc.data().name, status:doc.data().action,profileURL:doc.data().profileURL ==null ? 3:doc.data().profileURL,
+        goal_name:doc.data().goal_name, comments_number:doc.data().comments_number,likes:doc.data().likes,
+        hasLiked:doc.data().likedUsers.includes(this.currentUserId),
         tasks:doc.data().tasks}
       updates.push(update)      
       //retrieve tasks
@@ -54,60 +117,61 @@ export class Feed extends Component {
       return updates;
   
       }).then((updates)=>{
-        this.setState({datas:updates})
-      }
-      
-       )
-       .catch((error)=>{console.log(error)})  
+        
+        //this.setState({datas:updates})
+        datas=[...this.state.datas]
+        
+      //if refresh rerender with new data
+      this.setState({isLoading:false, datas:updates})
+        
+       
+      }).catch((error)=>{console.log(error)})  
   }
-  
+  findObjectByKey(array, key, value) {
+    for (var i = 0; i < array.length; i++) {
+        if (array[i][key] === value) {
+            return i;
+        }
+    }
+    return null;
+  };
+  update_comments(id){
+    index=this.findObjectByKey(this.state.datas,'id',id)
+    datas=[...this.state.datas]
+    datas[index].comments_number+=1
+
+    this.setState({datas:datas})
+  }
+  update_likes(id){
+    index=this.findObjectByKey(this.state.datas,'id',id)
+    datas=[...this.state.datas]
+    datas[index].likes+=1
+    datas[index].hasLiked=true
+
+    this.setState({datas:datas})
+  }
   render() {
-    const datas=this.state.datas
+    //const datas=this.state.datas
+    //if (this.datas==null) return null;
     return (
-      <ScrollView>
-
-        {datas!==null && datas.map((item) => (
-          <View style={styles.root}>
-            <PlanView data = {item} currentUserId={this.currentUser}/>
-            {/* <View style={styles.separator}/> */}
-          </View>
-        ))}
-
-      </ScrollView>
+      <FlatList
+      style={styles.root}
+      keyExtractor={item=>item.id}
+      data={this.state.datas}
+      renderItem={({item}) =><PlanView data = {item} currentUserName={this.currentUserName} 
+                              currentUserId={this.currentUserId}
+                              currentUserURL={this.currentUserURL}
+                              navigation = {this.props.navigation}
+                              update_likes={()=>{this.update_likes(item.id)}} 
+                              update_comments={()=>{this.update_comments(item.id)}} />}
+      refreshing={this.state.isLoading}
+      onRefresh={()=>this.retrieveData(10)}
+      onEndReachedThreshold={0.5}
+      onEndReached={()=>this.getExtraData(10)}
+    />
     )
   }
 };
-const datas = [
-  {
-    id:1,
-    username:'yixuanyxyxx emmm what if my name super long what will gonna happen ? i just curious',
-    status: 2, //1:creat 2:update 3:complish 
-    goal_name:'new goal1',
-    tasks:[{id:1,task:'do smth 1',checked:true},{id:2,task:'do smth 2',checked:false}],
-    likes: 18,
-    comments:[{id:1,content:'comment 1 goodbye everybody i have got to go goodbye everybody i have got to go ',username:'user1'},{id:2,content:'love u ',username:'user2'}],
-    commentText :'',
-    commentLinePlaceholder : 'Encourage your friend !'
-    // comments: 26,
-  // checked:false 
-  },
-  {
-    id:1,
-    username:'icelandofmonster',
-    status: 1, //1:creat 2:update 3:complish 
-    goal_name:'new goal',
-    tasks:[{id:1,task:'do smth 1',checked:false},{id:2,task:'do smth 2',checked:false}],
-    likes: 18,
-    comments:[
-      {id:1,content:'comment 1',username:'user1'},
-      {id:2,content:'Mama, just killed a man; Put a gun against his head; Pulled my trigger, now he\'s dead;Mama, life had just begun;But now I\'ve gone and thrown it all away; Mama, ooh, didn\'t mean to make you cry; If I\'m not back again this time tomorrow; Carry on, carry on as if nothing really matters',username:'user2'},
-      {id:3,content:'goodbye everybody i have got to go',username:'user3'}],
-    commentText :'',
-    commentLinePlaceholder : 'Encourage your friend !'
-    // comments: 26,
-    // checked:false 
-}];
-
 
 
 

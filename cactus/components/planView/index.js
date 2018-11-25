@@ -6,10 +6,12 @@ import {
     Text, 
     Button,
     ScrollView,
-    Image
+    TouchableOpacity,
 } from 'react-native';
+import { Avatar } from '../avatar';
+
 import {
-    RkCard,
+    RkStyleSheet,
     RkText,
     RkTextInput,
     RkButton,
@@ -34,178 +36,118 @@ export class PlanView extends RkComponent {
       task:{},
     };
     
-    static data = 
-    // static datas = [
-        {
-        username:'yixuan',
-        status: 2, //1:creat 2:update 3:complish 
-        tasks:[{id:1,task:'do smth 1',checked:true},{id:2,task:'do smth 2',checked:false}],
-        likes: 18,
-        comments:[{id:1,content:'comment 1',username:'user1'},{id:2,content:'comment 2',username:'user2'},{id:3,content:'comment 3',username:'user3'}],
-        commentText :'',
-        commentLinePlaceholder : 'Encourage your friend !'
-        // comments: 26,
-	    // checked:false 
-    };
-    // ,  {
-    //     username:'yixuan',
-    //     status: 2, //1:creat 2:update 3:complish 
-    //     //tasks:{1:{task:'do smth 1',checked:false},2:{task:'do smth 2',checked:false}},
-    //     tasks:[{id:1,task:'do smth 1',checked:true},{id:2,task:'do smth 2',checked:false}],
-    //     likes: 18,
-    //     comments:[{id:1,content:'comment 1',username:'user1'},{id:2,content:'comment 2',username:'user2'},{id:3,content:'comment 3',username:'user3'}],
-    //     commentText :'',
-    //     // comments: 26,
-	//     // checked:false 
-    // }
-    // ];
 
     componentDidMount () {
-        this.keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', this._keyboardDidHide);
-        console.log(this.state.hasLiked)
+
     }
 
-    componentWillUnmount () {
-        this.keyboardDidHideListener.remove();
-    }
   
     constructor(props) {
         super(props);
-        console.log(this.props.data.likes)
+        this.profileURLs=[
+            {id:0,url:require('../../data/img/avatars/Image1.jpg')},
+            {id:1,url:require('../../data/img/avatars/Image2.jpg')},
+            {id:2,url:require('../../data/img/avatars/Image3.jpg')},
+            {id:3,url:require('../../data/img/avatars/image_default.jpg')},
+
+          ]
+        this.currentUserId=this.props.currentUserId,
+        this.currentUserName=this.props.currentUserName,
+        this.currentUserURL=this.props.currentUserURL,
 
         this.ref= firebase.firestore().collection('updates')
-        this.state = {
-            likes: this.props.data.likes,
-            comments: this.props.data.comments || PlanView.data.comments,
-            username: this.props.data.username || PlanView.data.username,
-            status: this.props.data.status || PlanView.data.status,
-            tasks: this.props.data.tasks ||PlanView.data.tasks,
-            goal_name: this.props.data.goal_name, 
-            hasLiked:this.props.data.hasLiked || false,
-            updateId:this.props.data.id,
-            updateUserId:this.props.data.user_id,
-            edit_task_id:-1,
-            currentUserId:this.props.currentUserId,
-        };
+
+        this.navigation=this.props.navigation
+        this.onCommentButtonPressed=this.onCommentButtonPressed.bind(this)
+        this.onLikeButtonPressed=this.onLikeButtonPressed.bind(this)
+        this.updateId=this.props.data.id
+        this.updateUserId=this.props.data.user_id
+       
+        this.ref_notifications=firebase.firestore().collection('notifications').doc(this.updateUserId).collection('docs')   
+
+
+      
     }
 
-    onLikeButtonPressed = () => {
-        if (this.state.hasLiked==true){
+    updateCommentNumber(){
+        this.props.update_comments()
+        temp=this.ref.doc(this.updateId)
+
+        temp.get().then((doc)=>{
+            comments_number=doc.data().comments_number 
+            console.log(comments_number)
+            temp.update({comments_number:comments_number+1,
+        })
+    }).catch()
+}
+    onLikeButtonPressed(){
+
+        if (this.props.data.hasLiked==true){
             return null
         }
         else{
-        _likes=this.state.likes+1
-        //!!!!! no good here
-        // const defaultCount = PlanView.data.likes;
-        this.setState({
-            //????
-            likes: _likes,
-            hasLiked:true
-            // this.state.likes === defaultCount ?
-            //  : defaultCount,
+            this.props.update_likes()
 
-        });
-        this.ref.doc(this.state.updateId).update({likes:_likes,likedUsers:firebase.firestore.FieldValue.arrayUnion(this.state.currentUserId)})
+        temp=this.ref.doc(this.updateId)
+
+        temp.get().then((doc)=>{
+            _likes=doc.data().likes
+            temp.update({likes:_likes+1,
+            likedUsers:firebase.firestore.FieldValue.arrayUnion(this.currentUserId)})
+        }).catch((error)=>{console.log(error)})
+        sender_id=this.currentUserId
+        receiver_id=this.updateUserId
+        if (sender_id==receiver_id) return null
+        this.ref_notifications.add({
+            sender_id:this.currentUserId,
+            sender_name:this.currentUserName,
+            profileURL:this.currentUserURL,
+            updateId:this.updateId,
+            update_status:this.props.data.status, //1 new goal, 2 new plan 3 task completed
+            timestamp:Date.now(), 
+            action:0 //1 comment , 0 like
+        })
+    
+    
     }
     };
 
 
-//   onCommentButtonPressed = () => {
-//     const defaultCount = PlanView.data.comments;
-//     this.setState({
-//       comments: this.state.comments === defaultCount ? this.state.comments + 1 : defaultCount,
-//     });
-//   };
+  onCommentButtonPressed () {
+      this.navigation.navigate('Comments',{updateId:this.updateId,
+                                                updateUserId:this.updateUserId,
+                                                currentUserId:this.currentUserId,
+                                                currentUserURL:this.currentUserURL,
+                                            currentUserName:this.currentUserName,
+                                        update_status:this.props.data.status,
+                                    update_comment_number:()=>this.updateCommentNumber()})
+    // const defaultCount = PlanView.data.comments;
+    // this.setState({
+    //   comments: this.state.comments === defaultCount ? this.state.comments + 1 : defaultCount,
+    // });
+  };
   
-    findObjectByKey(array, key, value) {
-        for (var i = 0; i < array.length; i++) {
-            if (array[i][key] === value) {
-                return i;
-            }
-        }
-        return null;
-    };
-
- 
-
-    onTaskEdit(text){
-        // PlanView.data.commentLinePlaceholder  = text;
-        PlanView.data.commentText = text;
-    // const _tasks = [...this.state.tasks];
-    // index=this.findObjectByKey(_tasks,'id',id);
-    // _tasks[index].task =text ;
-  
-    // this.setState({edit_task_id: id, tasks:_tasks});
-    };
-
-    onEditDone(){
-        // PlanView.data.commentLinePlaceholder = 'Encourage your friend!';
-        const _comments = [...this.state.comments];
-        index = _comments.length;
-        var newElement = {id:index, content:'',username:'' }
-        newElement.content = PlanView.data.commentText;
-        newElement.username = 'you';
-        _comments.push(newElement);
-
-        // document.getElementById('commentLine').value = '';
-        this.setState({
-            commentLinePlaceholder:'say more to Encourage your friend!!',
-            comments:_comments});
-        //   const _comments = [...this.state.comments];
-        //   index = length(_comments);
-        //   _comments[index].id = index;
-        //   _comments[index].content = text;
-        //   _comments[index].username = 'you';
-        //   _comments[index] = {id:{index}}
-
-        //     const _edit_id=-1
-        //     this.setState({edit_task_id:_edit_id}); 
-    }
-
-    _keyboardDidHide= (event) =>{
-        this.onEditDone()
-    }
-
-    onTaskDelete(id){
-        const _edit_id = -1;
-        const _tasks = [...this.state.tasks];
-        index=this.findObjectByKey(_tasks,'id',id);
-        _tasks.splice(index, 1);
-        this.setState({edit_task_id:_edit_id, tasks:_tasks});
-    };
-
-    onPopupEvent (eventName, index,id) {
-        if (eventName !== 'itemSelected') 
-            return
-        const _edit_id=id
-        if (index === 0) {
-            this.setState({edit_task_id:_edit_id});
-        }
-        else {
-            Alert.alert(
-                'Delete',
-                'Are you sure you want to delete this task?',
-            [
-                {text: 'Cancel'},
-                {text: 'Yes, remove it', onPress:()=>this.onTaskDelete(id)},
-            ],
-            { cancelable: false })
-        }
-    }
 
     onPostReport(){
         Alert.alert(
-            'Lækker',
-            'Thank you for the contribution!',
+            'Dear',
+        'Thank you for reporting this post to us!',
         )
+        db=firebase.firestore().collection('reports')
+        db.add({
+            user:this.currentUserId,
+            reported_user:this.updateUserId,
+            reported_update:this.updateId,
+            action:'reported post',
+            timestamp:Date.now()
+        }).catch()
     }
 
     onPopupReport (eventName, index) {
         if (eventName !== 'itemSelected') return
         //const _edit_id=id
         if (index === 0) {
-          Alert.alert("Dear Cactus",
-            'Are you sure you want to report this post?',
+          Alert.alert('Dear','Are you sure you want to report this post?',
             [
                 {text: 'Cancel'},
                 {text: 'Yes, report', onPress:() => this.onPostReport()},
@@ -213,25 +155,23 @@ export class PlanView extends RkComponent {
             {cancelable: false})
         }
     }
-
+    onAvatarPressed(userId){
+        this.navigation.navigate('ProfileGuest',{userId:userId})
+    
+    }
     render() {
-
-        const {
-            container, section, icon, label,task,
-        } = this.defineStyles();
-
-        var likes = this.state.likes ;
+        var likes = this.props.data.likes ;
         // const likes = this.state.likes + (this.props.showLabel ? ' Likes' : '');
         // const comments = this.state.comments + (this.props.showLabel ? ' Comments' : '');
-        const comments = this.state.comments;
-        const tasks=this.state.tasks
-        const goal_name=this.state.goal_name
+        const comments_number = this.props.data.comments_number || 0;
+        const tasks=this.props.data.tasks || []
+        const goal_name=this.props.data.goal_name
+        const selectIndex= this.props.data.profileURL
+        const username=this.props.data.username
 
-        const username=this.state.username
-
-        if(this.state.status ==1){
+        if(this.props.data.status ==1){
             status= 'just set a new goal !';
-        }else if(this.state.status == 2){
+        }else if(this.props.data.status == 2){
             status= 'just created new plan !';
         }else{
             status= 'just completed a task !';
@@ -243,25 +183,33 @@ export class PlanView extends RkComponent {
             likes = likes + ' like';
         }
         
-        const hasLiked=this.state.hasLiked
+        const hasLiked=this.props.data.hasLiked
 
         return (
-            <View style={container}>
-                <View>
-                    <RkText rkType='primary'>{username}</RkText>
+            <View style={styles.root}>
+                
+                <View style={{flexDirection:"row"}}>
+                <TouchableOpacity onPress={()=>{this.onAvatarPressed(this.updateUserId)}}>
+                <Avatar img={this.profileURLs[selectIndex].url} rkType='small' />
+                </TouchableOpacity>
+                <View style={{flex:1,marginLeft:5}}>
+                <TouchableOpacity onPress={()=>{this.onAvatarPressed(this.updateUserId)}}>
+
+                    <RkText rkType='header4'>{username}</RkText>
+                    <RkText rkType='secondary2 hintColor'>{status}</RkText>
+                </TouchableOpacity>
                 </View>
-                <View>
-                    <RkText rkType='primary hintColor'>{status}</RkText>
-                </View>
-                <View style = {{flexDirection: 'row'}}>
-                    <View style = {{flex: 1}}>
-                        <RkText rkType='primary'>{'Goal Name: '+goal_name}</RkText>
-                    </View>
-                    <View style={{justifyContent: 'center'}}>
+              
+                <View style={{justifyContent: 'center'}}>
                         <PopupMenu actions={['Report']}  onPress={(e,index)=>this.onPopupReport(e,index)} />
-                    </View>
                 </View>
-    		
+                </View>
+                    <View >
+                        <RkText rkType='primary3'>
+                        <RkText rkType='primary3' style={{fontWeight:'bold'}}>Goal Name: </RkText>
+                        {goal_name}</RkText>
+                    </View>
+                       		
                 {tasks.length>0 && tasks.map((item) => (
                 // <View  style={{flex:1, flexDirection:'row', paddingVertical: 10,paddingHorizontal: 10}}>
                 <View>
@@ -274,14 +222,21 @@ export class PlanView extends RkComponent {
     
                
 
-                <View style={{paddingLeft: 10}}>
-                    <RkButton rkType='clear' onPress={this.onLikeButtonPressed}>
+                <View style={{alignSelf:'center',flexDirection:'row',flexWrap:'wrap'}}>
+                    <RkButton style={{margin:10}} rkType='clear' onPress={()=>{this.onLikeButtonPressed()}}>
                         <RkText rkType='primary6'> </RkText>
                         <RkText rkType='primary' ><Icon style={{fontSize:27}} name={hasLiked==true ? 'heart':'heart-o'}/></RkText>
                      
-                        <RkText rkType='primary' style={label}>{'  '+likes}</RkText>
+                        <RkText rkType='primary' >{'  '+likes}</RkText>
+                    </RkButton>
+                     <RkButton style={{margin:10}} rkType='clear' onPress={()=>{this.onCommentButtonPressed()}}>
+                        <RkText rkType='primary6'> </RkText>
+                        <RkText rkType='primary' ><Icon style={{fontSize:27}} name={'comment-o'}/></RkText>
+                     
+                        <RkText rkType='primary' >{'  '+comments_number}</RkText>
                     </RkButton>
                 </View>
+                
 
 
 	        </View>
@@ -289,6 +244,14 @@ export class PlanView extends RkComponent {
 }
 }
 
+const styles = RkStyleSheet.create(theme => ({ 
+    root: {
+      backgroundColor: theme.colors.screen.base,
+      marginTop:15,
+      marginBottom:15,
+      marginLeft:15
+    },
+}))
 
 // <View>
 // <RkText >Comments: </RkText>

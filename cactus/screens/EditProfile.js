@@ -3,6 +3,8 @@ import {
   View,
   ScrollView,
   Keyboard,
+  TouchableOpacity,
+  Image,
 } from 'react-native';
 import {
   RkButton,
@@ -29,12 +31,18 @@ export class EditProfile extends React.Component {
   constructor(props){
     super(props)
     this.curUser=firebase.auth().currentUser
+    this.profileURLs=[
+      {id:0,url:require('../data/img/avatars/Image1.jpg')},
+      {id:1,url:require('../data/img/avatars/Image2.jpg')},
+      {id:2,url:require('../data/img/avatars/Image3.jpg')},
+    ]
     this.state = {
       name:'',
       nameError:null,
       password: '',
       passwordError: null,
       aboutMe:'',
+      selectIndex:0,
     }
   }
 
@@ -43,12 +51,35 @@ export class EditProfile extends React.Component {
     return err;
   }
 
+  onFocus(){
+    db = firebase.firestore().collection('activity_log');
+    db.add(
+      {
+        user_id:firebase.auth().currentUser.uid,
+        action:'edit profile',
+        timestamp:Date.now()
+      }
+    ).catch()
+	}
+ 
+  componentWillUnmount(){
+    this.didFocusSubscription.remove()
+  }
+   componentDidMount() {
+   this.didFocusSubscription = this.props.navigation.addListener(
+		  'didFocus',
+		  payload => {
+		    this.onFocus();
+      });
+    }
+      
   updateUser(name,aboutMe){
-    
+    selectIndex=this.state.selectIndex
     timestamp=Date.now()
     firebase.firestore().collection('users').doc(this.curUser.uid).update({
         name: name,
         aboutMe:aboutMe,        
+        profileURL:this.profileURLs[selectIndex].id,
     }).then(()=>{
       this.props.navigation.state.params.refresh();
       console.log('saved')
@@ -75,11 +106,23 @@ export class EditProfile extends React.Component {
     const nameError=this.state.nameError
     const passwordError=this.state.passwordError
     const about=this.state.aboutMe
+    const selectIndex=this.state.selectIndex
 
     return (
     <ScrollView keyboardShouldPersistTaps='handled' style={styles.root}>
       <View style={styles.content}>
         <View>
+        <View style={{flexDirection:'row',alignSelf:'center',flexWrap:'wrap',padding:5}}>
+          {
+            this.profileURLs.map((item)=>(
+              <TouchableOpacity onPress={()=>this.setState({selectIndex:item.id})}><Image source={item.url} 
+              style={item.id==selectIndex ? styles.selected : styles.imageStyle} />
+              </TouchableOpacity>
+
+            ))
+
+          }
+          </View>
           <View style={styles.row}>
           <RkTextInput  
           label={<Icon name={'asterisk'} style={{color:'red'}}/>}
@@ -128,6 +171,16 @@ const styles = RkStyleSheet.create(theme => ({
     
 	paddingHorizontal: 10,
 	
+  },
+  imageStyle:{
+    margin:2,
+    width:80,height:80,borderRadius:40
+  },
+  selected:{
+    margin:2,
+    width:80,height:80,borderRadius:40,
+    borderWidth:3,
+    borderColor: theme.colors.border.accent
   },
   input:{
     fontSize:16,

@@ -216,58 +216,44 @@ class CactusStats extends Component {
     super(props);
     this.state={
       navigation:this.props.navigation,
-      aboutMe:null,
-      name:null,//this.user.name
-      goals:[],
-      taskCounter:0,
-      tasksCompleted:0,
-      comp:[]
+     
+			goals:[],
+			total_tasks:0,
+     	progress:0
     }
 
     this.ref=firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid)
-   
-    this.state.taskCounter++;
-
     //retrieve profile info
     this.ref.get().then((doc)=>{if (doc.exists) 
       {var user=doc.data()
       //retrieve goals
-      this.setState({name:user.name,aboutMe:user.aboutMe})
-      }}).catch()
-
-    this.ref.collection('goals').get().then((snap1)=>{
-              var goals = []
-              snap1.forEach((goal) => {
-              _goal={id:goal.data().id, name:goal.data().name}
-              goals.push(_goal)      
-              console.log(goals)
-              //retrieve tasks
-                })
-              return goals;
-          
-              }).then((goals)=>{
-                var new_goals = [];
-                goals.forEach((goal) => {
-                this.ref.collection('goals').doc(goal.id).collection('tasks').get()
-                //retrieve tasks
-                .then((snap2)=>{
-                  var tasks=[]
-                  snap2.forEach((task)=>{
-                    _task={id:task.data().id,task:task.data().task,checked:task.data().checked}
-                    if(_task.checked != "false"){
-                      this.state.tasksCompleted++;
-                    } 
-                    tasks.push(_task)
-                  })
-                  this.state.taskCounter = tasks.length;
-                  return tasks
-                }
-                ).then((tasks)=>{goal['tasks']=tasks; new_goals.push(goal);this.setState({goals:new_goals});console.log(new_goals)})})
-              }
-              
-               )
-               .catch((error)=>{console.log(error)})  
-                
+      this.setState({progress:user.progress})
+			}}).catch()
+			
+			db=this.ref.collection('goals').where('delete','==',false)
+			db.get().then((snap1)=>{
+			
+				number_of_goals=snap1.docs.length
+				goals=[]
+				snap1.forEach((goal) => {
+					_goal={id:goal.id,name:goal.data().name}
+					goals.push(_goal)
+				})
+				return goals}).then((goals)=>{
+					total_tasks=0
+					res=[]
+					goals.forEach((goal)=>{
+					this.ref.collection('goals').doc(goal.id).collection('tasks').where('delete','==',false).get().then((snap2)=>{
+					
+					total_tasks+=snap2.docs.length
+					res.push(goal)
+	
+						if (res.length==number_of_goals){
+							this.setState({goals:res,total_tasks:total_tasks})
+					}
+				}).catch((err)=>{console.log(err)})
+				})
+			}).catch((err)=>{console.log(err)})
   }
 
 	render() {
@@ -278,7 +264,7 @@ class CactusStats extends Component {
 	        <View style = {styles.section, styles.stats}>
 	          <View style={styles.statRow}>
 	            <View style={{flex: 1,paddingVertical:20}}>
-	              <RkText rkType='rounded'>Languages:</RkText>
+	              <RkText rkType='rounded'>My Goals:</RkText>
 	            </View>
 	            <View style={{flex: 1,paddingVertical:20}}>
 	              <RkText style={{textAlign: 'right'}}>
@@ -303,7 +289,7 @@ class CactusStats extends Component {
 	              <RkText rkType='rounded'>Completed Tasks:</RkText>
 	            </View>
 	            <View style={{flex: 1,paddingVertical:20}}>
-	              <RkText style={{textAlign: 'right'}}>{this.state.tasksCompleted + "/" + this.state.taskCounter}</RkText>
+	              <RkText style={{textAlign: 'right'}}>{this.state.progress + "/" + this.state.total_tasks}</RkText>
 	            </View>
 	            
 	          </View>
@@ -325,6 +311,7 @@ class CactusStats extends Component {
 
 /* Main Screen */
 export class MyCactus extends Component {
+	
 
 	constructor(props) {
 		super(props);
@@ -336,6 +323,14 @@ export class MyCactus extends Component {
 
 	onFocus(){
 		this.setState({isFocused: true})
+		db = firebase.firestore().collection('activity_log');
+		db.add(
+			{
+				user_id:firebase.auth().currentUser.uid,
+				action:'My cactus',
+				timestamp:Date.now(),
+			}
+		).catch()
 		ref = firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid);
 		ref.get().then( doc => { if(doc.exists){
 	  		completedGoals = doc.data().progress
@@ -370,7 +365,7 @@ export class MyCactus extends Component {
 		);
 
 	    return (
-	      <ScrollView style={{flex: 1, flexDirection: 'column'}}>
+	      <ScrollView style={styles.root}>
 
 	      {/* Here goes the name of the cactus */}
 	      	<View style={styles.section, styles.cactusName}>
@@ -414,6 +409,7 @@ const styles = RkStyleSheet.create(theme => ({
   	flexDirection: 'row',
   },
   root: {
+		flex: 1, flexDirection: 'column',
     backgroundColor: theme.colors.screen.base,
   },
   header: {    

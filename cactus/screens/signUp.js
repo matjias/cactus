@@ -2,7 +2,9 @@ import React from 'react';
 import {
   View,
   ScrollView,
-  Keyboard,
+  Image,
+  ActivityIndicator,
+  TouchableOpacity,
 } from 'react-native';
 import {
   RkButton,
@@ -18,16 +20,27 @@ import validation from '../components/validation'
 import validate from '../components/validation_wrapper'
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import firebase from 'react-native-firebase';
+import {ButtonGroup} from 'react-native-elements'
+import { Avatar } from '../components/avatar';
 
 export class SignUp extends React.Component {
   static navigationOptions = {
     title: 'Sign up'.toUpperCase(),
   };
   
+  componentDidMount(){
+  //init profileUrl list
+ 
   
+  }
 
   constructor(props){
     super(props)
+    this.profileURLs=[
+      {id:0,url:require('../data/img/avatars/Image1.jpg')},
+      {id:1,url:require('../data/img/avatars/Image2.jpg')},
+      {id:2,url:require('../data/img/avatars/Image3.jpg')},
+    ]
     this.state = {
       name:'',
       nameError:null,
@@ -39,6 +52,10 @@ export class SignUp extends React.Component {
       confirmError: null,
       aboutMe:'',
       signUp:false,
+      selectIndex:0,
+      isLoading:false,
+      
+      profileURL:'../data/img/avatars/Image3.jpg',
     }
   }
 
@@ -48,7 +65,9 @@ export class SignUp extends React.Component {
   }
 
   createUser(email,password, name,aboutMe){
+    this.setState({isLoading:true,error:null})
     timestamp=Date.now()
+    selectIndex=this.state.selectIndex
     firebase.auth().createUserWithEmailAndPassword(email, password)
     .then((credentials) => {
       firebase.firestore().collection('users').doc(credentials.user.uid).set({
@@ -57,24 +76,35 @@ export class SignUp extends React.Component {
         aboutMe:aboutMe,
         cactusName:'Hello bebe',
         progress:0,
-        timestamp:timestamp
+        profileURL:this.profileURLs[selectIndex].id,
+        timestamp:timestamp,
+        error:null
         
     })})
     .catch((error) => {
-      this.setState({signUp:false});
-      const { code, message } = error;
-      console.log(code,message)
+      var { code, message } = error;
+      if (code=='auth/unknown') 
+      {message='Please check you Internet connection'}
+      else{
+        message='Something went wrong, please try again later'
+      }
+      
+      this.setState({isLoading:false,error:message})
       
     });
 }
 
   onSignUpButtonPressed = () => {
     //add to db
-    if  (this.state.emailError!=null || this.state.passwordError!=null || this.state.nameError!=null){
-      return null;
+    if  (this._validate('name',this.state.name)!=null || this._validate('email',this.state.email)!=null 
+    || this._validate('password',this.state.password)!=null){
+      return  this.setState({nameError:this._validate('name',this.state.name),
+              emailError:this._validate('email',this.state.email),
+              passwordError:this._validate('password',this.state.password)
+            })
     }
     else if (this.state.name==''){
-      return this.setState({nameError:this._validate('name',this.state.email)})
+      return this.setState({nameError:this._validate('name',this.state.name)})
     }
     else if (this.state.email==''){
       return this.setState({emailError:this._validate('email',this.state.email)})
@@ -82,7 +112,7 @@ export class SignUp extends React.Component {
     else if (this.state.password==''){
       return this.setState({passwordError:this._validate('password',this.state.password)});
     }
-  this.setState({signUp:true})
+  
   return this.createUser(this.state.email,this.state.password,this.state.name,this.state.aboutMe)
   };
 
@@ -96,11 +126,35 @@ export class SignUp extends React.Component {
     const passwordError=this.state.passwordError
     const signUp=this.state.signUp
     const about=this.state.aboutMe
+    const selectIndex=this.state.selectIndex
+    const isLoading=this.state.isLoading
+    const error=this.state.error
 
+
+    if (isLoading){
+    return (
+      <View style={[styles.a_container, styles.a_horizontal]}>
+       
+        <ActivityIndicator size="large" color="#00ff00" />
+      </View>)
+    }
     return (
     <ScrollView keyboardShouldPersistTaps='handled' style={styles.root}>
       <View style={styles.content}>
+      
         <View>
+          <View style={{flexDirection:'row',alignSelf:'center',flexWrap:'wrap',padding:5}}>
+          {
+            this.profileURLs.map((item)=>(
+              <TouchableOpacity onPress={()=>this.setState({selectIndex:item.id})}><Image source={item.url} 
+              style={item.id==selectIndex ? styles.selected : styles.imageStyle} />
+              </TouchableOpacity>
+
+            ))
+
+          }
+          </View>
+
           <View style={styles.row}>
           <RkTextInput  
           label={<Icon name={'asterisk'} style={{color:'red'}}/>}
@@ -112,7 +166,8 @@ export class SignUp extends React.Component {
 
           <View style={styles.row}>
           
-          <RkTextInput rkType='bordered'  
+          <RkTextInput rkType='bordered' 
+          keyboardType='email-address' autoCapitalize='none' 
           label={<Icon name={'asterisk'}  style={{color:'red'}}/>}
           labelStyle={{fontSize:6,marginLeft:5}}
           inputStyle={styles.input} style={{flex:1,marginVertical:0}}  placeholder='Email' onChangeText={(txt)=>this.setState({email:txt})}  
@@ -123,6 +178,7 @@ export class SignUp extends React.Component {
           <View style={styles.row}>
           
           <RkTextInput rkType='bordered'  
+          autoCapitalize='none'
           label={<Icon name={'asterisk'} style={{color:'red'}}/>}
           labelStyle={{fontSize:6,marginLeft:5}}
           inputStyle={styles.input} style={{flex:1,marginVertical:0}} placeholder='Password' secureTextEntry onChangeText={(txt)=>(this.setState({password:txt}))}
@@ -159,6 +215,8 @@ export class SignUp extends React.Component {
               <RkText rkType='header6' style={{fontWeight:'bold'}}>Sign in now</RkText>
             </RkButton>
           </View>
+          {error !== null ? <RkText style={{alignSelf:'center',color:'red',fontSize:11,}}>{error}</RkText> : null}
+
         </View>
       </View>
       </ScrollView>
@@ -169,9 +227,32 @@ export class SignUp extends React.Component {
 export default SignUp;
 
 const styles = RkStyleSheet.create(theme => ({
+  a_container: {
+    backgroundColor: theme.colors.screen.base,
+
+    flex: 1,
+    justifyContent: 'center'
+  },
+  a_horizontal: {
+    backgroundColor: theme.colors.screen.base,
+
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    padding: 10
+  },
   root: {
     backgroundColor: theme.colors.screen.base,
     flex: 1,
+  },
+  imageStyle:{
+    margin:2,
+    width:80,height:80,borderRadius:40
+  },
+  selected:{
+    margin:2,
+    width:80,height:80,borderRadius:40,
+    borderWidth:3,
+    borderColor: theme.colors.border.accent
   },
   header: {
     
@@ -207,7 +288,7 @@ const styles = RkStyleSheet.create(theme => ({
   
   footer: {
     margin:20,
-    justifyContent:'flex-end'
+    alignSelf:'center'
   },
   textRow: {
     flexDirection: 'row',

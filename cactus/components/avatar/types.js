@@ -34,11 +34,18 @@ export const AvatarTypes = () => ({
       flexDirection: 'column',
     },
   },
+  medium: {
+    image: {
+      width: 100,
+      height: 100,
+      borderRadius: 50,
+    },
+  },
   small: {
     image: {
-      width: 32,
-      height: 32,
-      borderRadius: 16,
+      width: 40,
+      height: 40,
+      borderRadius: 20,
     },
   },
   circle: {
