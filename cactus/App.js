@@ -20,6 +20,10 @@ import Notifications from './screens/Notifications';
 import Comments from './screens/Comments';
 import ProfileGuest from './screens/Profile_guest';
 import Update from './screens/Update';
+import Feedback from './screens/Feedback';
+import About from './screens/About';
+
+
 
 import firebase from 'react-native-firebase';
 
@@ -51,7 +55,9 @@ const ProfileStack = createStackNavigator({
   Notifications: Notifications,
   ProfileGuest:ProfileGuest,
   Update,
-  Comments:Comments
+  Comments:Comments,
+  Feedback:Feedback,
+  //About:About
 
   
 });

@@ -110,10 +110,16 @@ export default class Notifications extends Component {
 
 
     onAvatarPressed(userId){
+      if (userId==null){
+        return null;
+      }
         this.props.navigation.navigate('ProfileGuest',{userId:userId})
     
     }
     onItemPressed(updateId){
+      if (updateId==null){
+        return null;
+      }
         this.props.navigation.navigate('Update',{updateId:updateId})
     
     }
@@ -126,8 +132,11 @@ export default class Notifications extends Component {
         update_status= 'your new goal !';
     }else if(update_status== 2){
         update_status= 'your new plan !';
-    }else{
+    }else if (update_status== 3){
         update_status= 'your completed task !';
+    }
+    else{
+        update_status= 'new message!'
     }
 
     if (action==0){
@@ -135,6 +144,9 @@ export default class Notifications extends Component {
     }
     else if(action==1){
         action='commented on '
+    }
+    else{
+      action= ': '
     }
 
     

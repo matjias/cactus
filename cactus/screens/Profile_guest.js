@@ -24,7 +24,7 @@ export class ProfileGuest extends Component {
         //headerStyle: {backgroundColor:'#3c3c3c'},
 		//headerRight: <Icon style={{ marginLeft:15,color:'green' }} name={'check'} size={25} onPress={() => params.handleSave()} />
 		  headerRight: <View style={{justifyContent: 'center',marginRight:10}}>
-      <PopupMenu actions={['Report']} onPress={(e,index)=>params.onPopupEvent(e,index)} />
+      <PopupMenu actions={['Report user']} onPress={(e,index)=>params.onPopupEvent(e,index)} />
     </View>
     };
 	};

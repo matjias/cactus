@@ -382,7 +382,7 @@ export class AddTask extends Component {
 		<View  style={styles.root}  onStartShouldSetResponderCapture={() => {
 			this.setState({ enableScrollViewScroll: true });
 		}}> 
-			<ScrollView keyboardShouldPersistTaps='handled'
+			<ScrollView style ={{flex:1,marginTop:10}}keyboardShouldPersistTaps='handled'
 			
 			ref={ref => this.scrollView = ref}
 			
@@ -391,6 +391,8 @@ export class AddTask extends Component {
 			>
 			<View style={styles.goal}>
 				<RkText rkType='primary'>Your goal?</RkText>
+				<RkText rkType='secondary3 hintColor'>your long-term learning goal</RkText>
+
 				<RkTextInput placeholder='Add your goal here' onFocus={()=>this.showSuggestions(true)} 
 				onBlur={()=>this.showSuggestions(false)} multiline={true} maxLength={140}
 				onChangeText={(text)=>this.addGoal(text)} value={goal.name}/>
@@ -418,6 +420,8 @@ export class AddTask extends Component {
 			
 			<View style={styles.tasks}>
 				<RkText rkType='primary'>Add your task(s)?</RkText>
+				<RkText rkType='secondary3 hintColor'>your daily task(s) to achieve the goal. You can add more tasks later in Edit page</RkText>
+
 				
 				{tasks.map((item) => (
 					item.delete==false &&
@@ -461,7 +465,7 @@ const styles = RkStyleSheet.create(theme => ({
   },
    goal: {
 		paddingHorizontal:10,
-		
+		marginBottom:15
   },
   tasks: {
     paddingHorizontal:10,

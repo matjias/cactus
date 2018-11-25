@@ -54,7 +54,7 @@ export class SignUp extends React.Component {
       signUp:false,
       selectIndex:0,
       isLoading:false,
-      
+      error:null,
       profileURL:'../data/img/avatars/Image3.jpg',
     }
   }
@@ -78,7 +78,6 @@ export class SignUp extends React.Component {
         progress:0,
         profileURL:this.profileURLs[selectIndex].id,
         timestamp:timestamp,
-        error:null
         
     })})
     .catch((error) => {

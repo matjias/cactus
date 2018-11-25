@@ -24,7 +24,7 @@ export class Profile extends Component {
         //headerStyle: {backgroundColor:'#3c3c3c'},
 		//headerRight: <Icon style={{ marginLeft:15,color:'green' }} name={'check'} size={25} onPress={() => params.handleSave()} />
 		  headerRight: <View style={{justifyContent: 'center',marginRight:10}}>
-      <PopupMenu actions={['Edit profile','Sign out']} onPress={(e,index)=>params.onPopupEvent(e,index)} />
+      <PopupMenu actions={['Edit profile','Give us your feedback','Sign out']} onPress={(e,index)=>params.onPopupEvent(e,index)} />
     </View>
     };
 	};
@@ -115,7 +115,7 @@ export class Profile extends Component {
       this.lastVisible = snap1.docs[snap1.docs.length-1];
       number_of_goals=snap1.docs.length
       if (number_of_goals==0){
-        this.setState({isLoading:false})
+        this.setState({isLoading:false,goals:0})
       }
       goals=[]
       snap1.forEach((goal) => {
@@ -189,7 +189,13 @@ export class Profile extends Component {
     if (index === 0){
       this.props.navigation.navigate('EditProfile',{refresh:()=>this.retrieveProfileInfo()})
     }
-    else if (index === 1) {
+    else if(index==1){
+      this.props.navigation.navigate('Feedback',{ currentUserId:this.userId,
+                                                  currentUserURL:this.state.profileURL,
+                                              currentUserName:this.state.name,})
+
+    }
+    else if (index === 2) {
       //this.state.navigation.navigate('EditProfile')
       firebase.auth().signOut().catch((error) => {
         const { code, message } = error;

@@ -36,9 +36,9 @@ export const AvatarTypes = () => ({
   },
   medium: {
     image: {
-      width: 100,
-      height: 100,
-      borderRadius: 50,
+      width: 90,
+      height: 90,
+      borderRadius: 45,
     },
   },
   small: {

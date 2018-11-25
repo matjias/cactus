@@ -130,7 +130,7 @@ export class PlanView extends RkComponent {
 
     onPostReport(){
         Alert.alert(
-            'Dear',
+            'Dear ',
         'Thank you for reporting this post to us!',
         )
         db=firebase.firestore().collection('reports')
@@ -201,7 +201,7 @@ export class PlanView extends RkComponent {
                 </View>
               
                 <View style={{justifyContent: 'center'}}>
-                        <PopupMenu actions={['Report']}  onPress={(e,index)=>this.onPopupReport(e,index)} />
+                        <PopupMenu actions={['Report post']}  onPress={(e,index)=>this.onPopupReport(e,index)} />
                 </View>
                 </View>
                     <View >
