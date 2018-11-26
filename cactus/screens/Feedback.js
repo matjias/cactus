@@ -20,7 +20,7 @@ import validation from '../components/validation'
 import validate from '../components/validation_wrapper'
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import firebase from 'react-native-firebase';
-import {ButtonGroup} from 'react-native-elements'
+import {CheckBox} from 'react-native-elements'
 import { Avatar } from '../components/avatar';
 
 export class SignUp extends React.Component {
@@ -39,12 +39,11 @@ export class SignUp extends React.Component {
     uid=firebase.auth().currentUser.uid
     this.state = {
       like:'',
-      use:'',
       dontLike: '',
-      dontUse:'',
       suggest: '',
       problems:'',
       other:'',
+      selected:'yes'
     }
   }
 
@@ -57,9 +56,8 @@ export class SignUp extends React.Component {
     db=firebase.firestore().collection('feedback').doc(this.uid)
     db.set({
         like:this.state.like,
-        use:this.state.use,
         dontLike: this.state.dontLike,
-        dontUse:this.state.dontUse,
+        recommend:this.state.selected,
         suggest: this.state.suggest,
         problems:this.state.problems,
         other:this.state.other,
@@ -69,11 +67,10 @@ export class SignUp extends React.Component {
 
  
   render(){
-    const intro ="Thank you for using the Cactus app. We would like to know more about your experience! Please answer the following questions."
-    const like="What do you like about the app?"
-    const use="Why would you use it?"
-    const dontLike="What you do not like about the app?"
-    const dontUse="Why you would not use it?"
+    const intro ="Thank you for using the Cactus app. We would like to know your honest opinion about it."
+    const like="What do you like the most about the app?"
+    const dontLike="What do you like the least about the app?"
+    const recommend="Would you recommend it to your friend?"
     const problems="Did you have any problems with the Cactus app?"
     const suggest="Any suggestions for improvement?"
     const other= "Anything else you wish to tell us?"
@@ -90,13 +87,7 @@ export class SignUp extends React.Component {
           inputStyle={{fontSize:16,marginLeft:3}} style={{ marginBottom:15}} 
           multiline={true} numberOfLines={3} maxLength={200}
           onChangeText={(text)=>this.setState({like:text})}/>
-           <RkText rkType={"primary2"}>{use}</RkText>
-          <RkTextInput rkType='bordered'
-          label={<RkText>{this.state.use.length}/200</RkText>}
-          labelStyle={{alignSelf:'flex-start',flexWrap:'wrap', fontSize:11,marginLeft:2,marginTop:2}} 
-          inputStyle={{fontSize:16,marginLeft:3}} style={{ marginBottom:15}} 
-          multiline={true} numberOfLines={3} maxLength={200}
-          onChangeText={(text)=>this.setState({use:text})}/>
+          
            <RkText rkType={"primary2"}>{dontLike}</RkText>
           <RkTextInput rkType='bordered'
           label={<RkText>{this.state.dontLike.length}/200</RkText>}
@@ -105,13 +96,19 @@ export class SignUp extends React.Component {
           multiline={true} numberOfLines={3} maxLength={200}
           onChangeText={(text)=>this.setState({dontLike:text})}/>
 
-           <RkText rkType={"primary2"}>{dontUse}</RkText>
-          <RkTextInput rkType='bordered'
-          label={<RkText>{this.state.dontUse.length}/200</RkText>}
-          labelStyle={{alignSelf:'flex-start',flexWrap:'wrap', fontSize:11,marginLeft:2,marginTop:2}} 
-          inputStyle={{fontSize:16,marginLeft:3}} style={{ marginBottom:15}} 
-          multiline={true} numberOfLines={3} maxLength={200}
-          onChangeText={(text)=>this.setState({dontUse:text})}/>
+           <RkText rkType={"primary2"}>{recommend}</RkText>
+           <View style={{flexDirection:'row'}}>
+           {
+            ['Yes','No'].map((item)=>(
+                <CheckBox title={item}
+                checked={item.toLowerCase()==this.state.selected} 
+                checkedIcon='dot-circle-o'
+                uncheckedIcon='circle-o'
+                onPress={()=>this.setState({selected:item.toLowerCase()})}
+                containerStyle={{backgroundColor:'transparent',borderWidth: 0,flex:1}}/>
+            ))   
+           }
+           </View>
 
            <RkText rkType={"primary2"}>{problems}</RkText>
           <RkTextInput rkType='bordered'

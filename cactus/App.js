@@ -158,6 +158,7 @@ componentDidMount() {
    */
 componentWillUnmount() {
   this.authSubscription();
+ 
 }
   
 render() {

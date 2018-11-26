@@ -170,6 +170,14 @@ export class Profile extends Component {
  
   componentWillUnmount(){
     this.didFocusSubscription.remove()
+    db = firebase.firestore().collection('activity_log');
+    db.add(
+      {
+        user_id:firebase.auth().currentUser.uid,
+        action:'app closed',
+        timestamp:Date.now()
+      }
+    ).catch()
   }
    componentDidMount() {
    this.didFocusSubscription = this.props.navigation.addListener(
