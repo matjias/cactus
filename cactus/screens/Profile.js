@@ -283,6 +283,9 @@ export class Profile extends Component {
     goal_index=this.findObjectByKey(_goals,'id',goal_id)
     _tasks=[..._goals[goal_index].tasks]
     task_index=this.findObjectByKey(_tasks,'id',item.id)
+    if ( _tasks[task_index].checked ==true){
+      return null
+    }
     _tasks[task_index].checked =true;
     _goals[goal_index].tasks=_tasks
     _progress=this.state.progress
